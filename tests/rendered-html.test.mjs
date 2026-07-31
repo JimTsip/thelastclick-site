@@ -7,12 +7,13 @@ const projectRoot = new URL("../", import.meta.url);
 test("exports the The Last Click landing page", async () => {
   const html = await readFile(new URL("out/index.html", projectRoot), "utf8");
 
-  assert.match(html, /<title>The Last Click — Indie Games\. Bold Ideas\.<\/title>/i);
-  assert.match(html, /Indie Games\./i);
+  assert.match(html, /<title>The Last Click — AI First\. Bold Ideas\.<\/title>/i);
+  assert.match(html, /AI First\./i);
   assert.match(html, /Bold Ideas\./i);
   assert.match(html, /One Last Click\./i);
+  assert.match(html, /We turn ambitious ideas into AI-powered products that actually work\./i);
   assert.match(html, /mailto:hello@thelastclick\.gr/i);
-  assert.match(html, /The Last Click © 2024/i);
+  assert.match(html, /The Last Click © 2026/i);
 });
 
 test("exports domain and brand assets", async () => {

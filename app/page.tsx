@@ -1,6 +1,20 @@
 import Image from "next/image";
 
-const pixels = ["one", "two", "three", "four", "five", "six"];
+const pixels = [
+  "one",
+  "two",
+  "three",
+  "four",
+  "five",
+  "six",
+  "seven",
+  "eight",
+  "nine",
+  "ten",
+  "eleven",
+  "twelve",
+  "thirteen",
+];
 
 export default function Home() {
   return (
@@ -23,14 +37,17 @@ export default function Home() {
 
       <section className="hero" id="top" aria-labelledby="hero-title">
         <h1 id="hero-title">
-          <span>Indie Games.</span>
+          <span>AI First.</span>
           <span>Bold Ideas.</span>
           <span className="accent-line">One Last Click.</span>
         </h1>
+        <p className="hero-tagline">
+          We turn ambitious ideas into AI-powered products that actually work.
+        </p>
       </section>
 
       <footer className="site-footer">
-        <p>The Last Click © 2024</p>
+        <p>The Last Click © 2026</p>
       </footer>
     </main>
   );
