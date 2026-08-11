@@ -39,11 +39,46 @@ export const metadata: Metadata = {
   },
 };
 
+const organizationSchema = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "The Last Click",
+  legalName: "THE LAST CLICK EE",
+  url: "https://thelastclick.gr",
+  logo: "https://thelastclick.gr/TLC-logo.png",
+  description: "We turn ambitious ideas into AI-powered products that actually work.",
+  email: "hello@thelastclick.gr",
+  founder: { "@type": "Person", name: "Jim Tsipoutas", url: "https://jimtsipoutas.com" },
+  address: { "@type": "PostalAddress", addressCountry: "GR" },
+  sameAs: [
+    "https://padlboard.ai",
+    "https://boomboats.com",
+    "https://cookonomics.com",
+    "https://flexui.ai",
+  ],
+};
+
+const websiteSchema = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: "The Last Click",
+  url: "https://thelastclick.gr",
+  publisher: { "@type": "Organization", name: "The Last Click" },
+};
+
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
       <body className={`${geist.variable} ${geistMono.variable} ${jersey.variable}`}>
         {children}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
+        />
         <Script src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`} strategy="afterInteractive" />
         <Script id="ga4" strategy="afterInteractive">{`
           window.dataLayer = window.dataLayer || [];

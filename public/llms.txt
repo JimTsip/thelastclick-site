@@ -1,0 +1,18 @@
+# The Last Click
+
+> The Last Click is a small studio that turns ambitious ideas into AI-powered products that actually work — from first framing to a shipped app.
+
+## What we do
+We design and build products end to end: the idea, the interface, the engineering and the release. AI is not a feature we bolt on at the end; it is where we start when it earns its place, and where we stop when it does not.
+
+## What we have shipped
+- [Padlboard](https://padlboard.ai) — padel scoring for Apple Watch and iPhone, live on the App Store.
+- [BoomBoats](https://boomboats.com) — a voxel Battleship game for iPhone.
+- [Cookonomics](https://cookonomics.com) — food costing and margins for restaurants and food businesses.
+- [FlexUI](https://flexui.ai) — an API-driven design system that keeps AI coding tools on brand.
+
+## Contact
+hello@thelastclick.gr
+
+## Pages
+- [Home](https://thelastclick.gr/): who we are and how to reach us.
