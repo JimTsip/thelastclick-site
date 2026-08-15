@@ -999,12 +999,79 @@ export default function TowerScene() {
     const bodies = Array.from(document.querySelectorAll<HTMLElement>(".floor-inner"));
 
     const onPointerMove = (event: PointerEvent) => {
+      // A touch screen has no hover; its "pointer" is the gyroscope below.
+      if (event.pointerType === "touch") return;
       parallaxTarget.set(
         (event.clientX / window.innerWidth) * 2 - 1,
         (event.clientY / window.innerHeight) * 2 - 1,
       );
     };
     const onPointerLeave = () => parallaxTarget.set(0, 0);
+
+    /**
+     * Gyroscope parallax for phones — the iOS home-screen effect.
+     *
+     * Tilt drives the same parallaxTarget the mouse drives on desktop, so the
+     * camera, the wall and the DOM copy all respond exactly as they do to a
+     * pointer, and nothing downstream has to know which one is in charge.
+     *
+     * The device's resting pose is not "flat": people hold a phone at 30–60°.
+     * So the first reading becomes the neutral point and everything is
+     * measured relative to it; a slow drift back to neutral keeps it from
+     * sticking after the phone has been re-held.
+     *
+     * iOS 13+ only delivers orientation events after
+     * DeviceOrientationEvent.requestPermission(), and only from inside a user
+     * gesture — hence the one-shot listener on the first touch. Android and
+     * older iOS just start receiving events. Under reduced motion this is
+     * never armed at all.
+     */
+    let tiltNeutral: { beta: number; gamma: number } | null = null;
+    const TILT_RANGE = 22; // degrees of tilt that map to full parallax
+
+    const onOrientation = (event: DeviceOrientationEvent) => {
+      if (event.beta === null || event.gamma === null) return;
+      // Portrait vs landscape swap which axis is "left–right".
+      const landscape = window.innerWidth > window.innerHeight;
+      const lr = landscape ? event.beta : event.gamma;
+      const fb = landscape ? -event.gamma : event.beta;
+      if (!tiltNeutral) tiltNeutral = { beta: fb, gamma: lr };
+      // Ease the neutral point toward the current pose so a change of grip
+      // does not leave the parallax pinned to one side.
+      tiltNeutral.gamma += (lr - tiltNeutral.gamma) * 0.01;
+      tiltNeutral.beta += (fb - tiltNeutral.beta) * 0.01;
+      const x = THREE.MathUtils.clamp((lr - tiltNeutral.gamma) / TILT_RANGE, -1, 1);
+      const y = THREE.MathUtils.clamp((fb - tiltNeutral.beta) / TILT_RANGE, -1, 1);
+      parallaxTarget.set(x, y);
+    };
+
+    let tiltArmed = false;
+    const armTilt = () => {
+      if (tiltArmed || reducedMotion) return;
+      tiltArmed = true;
+      const DOE = window.DeviceOrientationEvent as typeof DeviceOrientationEvent & {
+        requestPermission?: () => Promise<"granted" | "denied">;
+      };
+      if (typeof DOE?.requestPermission === "function") {
+        DOE.requestPermission()
+          .then((state) => {
+            if (state === "granted") window.addEventListener("deviceorientation", onOrientation, { passive: true });
+          })
+          .catch(() => {
+            /* denied or unavailable — the page simply has no tilt */
+          });
+      } else if ("DeviceOrientationEvent" in window) {
+        window.addEventListener("deviceorientation", onOrientation, { passive: true });
+      }
+    };
+    // Only touch devices should ever ask; on a laptop this is noise.
+    const coarse = window.matchMedia("(pointer: coarse)").matches;
+    if (coarse) {
+      // Android/older iOS: arm immediately (no permission needed there).
+      const needsGesture = typeof (window.DeviceOrientationEvent as { requestPermission?: unknown })?.requestPermission === "function";
+      if (!needsGesture) armTilt();
+      else window.addEventListener("touchend", armTilt, { once: true, passive: true });
+    }
 
     /* ---------------------------------------------------------- theme grade */
 
@@ -1081,8 +1148,11 @@ export default function TowerScene() {
       camera.position.y = mapY(eased);
       // Portrait has no lateral slack; the sway that adds life on desktop
       // pushes a frame-fitted title off the edge on a phone.
+      // Portrait damps the scroll-driven weave (a fitted title has no lateral
+      // slack) but not the pointer/tilt parallax — that is the whole point of
+      // the gyroscope on a phone.
       const sway = camera.aspect < 1 ? 0.35 : 1;
-      camera.position.x = (Math.sin(eased * Math.PI * 3.7) * 1.6 + parallax.x * 0.9) * sway;
+      camera.position.x = Math.sin(eased * Math.PI * 3.7) * 1.6 * sway + parallax.x * 0.9;
       camera.position.z = CAMERA_REST_Z + Math.sin(eased * Math.PI * 2.3) * 1.4 + parallax.y * 0.35;
       camera.lookAt(
         camera.position.x * -0.2 + parallax.x * 1.4,
@@ -1224,6 +1294,8 @@ export default function TowerScene() {
       window.removeEventListener("resize", onResize);
       window.removeEventListener("pointermove", onPointerMove);
       document.documentElement.removeEventListener("pointerleave", onPointerLeave);
+      window.removeEventListener("deviceorientation", onOrientation);
+      window.removeEventListener("touchend", armTilt);
       document.removeEventListener("visibilitychange", onVisibility);
       motionQuery.removeEventListener("change", onMotionChange);
       resizeObserver.disconnect();
