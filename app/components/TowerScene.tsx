@@ -504,6 +504,12 @@ export default function TowerScene() {
     const box = (colour: number, b: Box) => buckets[colour].push(b);
 
     const topY = SKY_HEADROOM;
+    /**
+     * The masonry starts above the first viewport: on load you are already
+     * INSIDE the shaft, wall on every side, and the descent begins from
+     * there. (An open-sky hero was tried and felt empty by comparison.)
+     */
+    const wallTop = topY;
     const bottomY = floorY(FLOORS.length - 1) - FLOOR_UNDERRUN;
 
     /** Deterministic — the tower must be the same building on every reload. */
@@ -589,7 +595,7 @@ export default function TowerScene() {
 
     // Backing plane, in 2-unit bands. In sky mode the bands behind the titles
     // become shutter cells too, so the backing itself parts to reveal the type.
-    for (let y = topY; y >= bottomY; y -= 2) {
+    for (let y = wallTop; y >= bottomY; y -= 2) {
       const zone = titleMode === "sky" ? zoneOf(0, y) : null;
       if (zone) {
         // Split the band into two halves that slide apart, plus fixed edges.
@@ -605,7 +611,7 @@ export default function TowerScene() {
 
     const COLS = 9;
     for (let col = -COLS; col <= COLS; col += 1) {
-      for (let y = topY; y >= bottomY; y -= 2) {
+      for (let y = wallTop; y >= bottomY; y -= 2) {
         const row = Math.round(y / 2);
         const r = hash(col, row);
         if (r < 0.44) continue;
@@ -618,7 +624,7 @@ export default function TowerScene() {
       }
     }
 
-    for (let y = topY; y >= bottomY; y -= 4) {
+    for (let y = wallTop; y >= bottomY; y -= 4) {
       const beat = Math.abs(Math.round(y / 4)) % 4 === 0;
       const ribColour = beat ? 4 : 2;
       const midZ = (BACK_WALL_Z + SHAFT_FRONT_Z) / 2;
@@ -651,7 +657,7 @@ export default function TowerScene() {
     };
 
     // --- far silhouettes, glimpsed through the gaps -------------------------
-    for (let y = topY; y >= bottomY; y -= 9) {
+    for (let y = wallTop; y >= bottomY; y -= 9) {
       const r = hash(7, Math.round(y));
       const x = (r - 0.5) * 26;
       const height = 6 + r * 12;
@@ -662,7 +668,7 @@ export default function TowerScene() {
 
     // --- service pipes -----------------------------------------------------
     [-13.5, 13.5].forEach((x, side) => {
-      for (let y = topY; y >= bottomY; y -= 2) {
+      for (let y = wallTop; y >= bottomY; y -= 2) {
         box(2, [x, y, BACK_WALL_Z + 3.5, 1, 2, 1]);
         if (Math.abs(Math.round(y)) % 10 === (side === 0 ? 0 : 4)) {
           box(4, [x, y, BACK_WALL_Z + 3.7, 2, 1, 2]);
@@ -671,15 +677,15 @@ export default function TowerScene() {
     });
 
     // --- a maintenance ladder ----------------------------------------------
-    for (let y = topY; y >= bottomY; y -= 2) box(4, [-16, y, BACK_WALL_Z + 5, 3, 0.6, 0.6]);
-    for (let y = topY; y >= bottomY; y -= 8) {
+    for (let y = wallTop; y >= bottomY; y -= 2) box(4, [-16, y, BACK_WALL_Z + 5, 3, 0.6, 0.6]);
+    for (let y = wallTop; y >= bottomY; y -= 8) {
       box(2, [-17.2, y, BACK_WALL_Z + 5, 0.6, 8, 0.6]);
       box(2, [-14.8, y, BACK_WALL_Z + 5, 0.6, 8, 0.6]);
     }
 
     // --- platforms, alternating sides — the platformer read ----------------
     for (let i = 0; i < 26; i += 1) {
-      const y = topY - 6 - i * 9;
+      const y = wallTop - 6 - i * 9;
       if (y < bottomY) break;
       const left = i % 2 === 0;
       const x = left ? -12 : 12;
@@ -690,13 +696,6 @@ export default function TowerScene() {
         box(s % 4 === 0 ? 7 : 1, [x + s, y + 1.1, BACK_WALL_Z + 9, 2, 0.6, 1]);
       }
       box(1, [x + (left ? -width / 2 : width / 2) * 0.7, y - 2.5, BACK_WALL_Z + 4, 1.5, 4, 3]);
-    }
-
-    // --- the sky lobby -----------------------------------------------------
-    box(3, [0, SKY_HEADROOM - 5, BACK_WALL_Z + 10, 26, 2, 16]);
-    box(5, [0, SKY_HEADROOM - 4, BACK_WALL_Z + 10, 22, 1, 12]);
-    for (let s = -12; s <= 12; s += 2) {
-      box(s % 4 === 0 ? 7 : 1, [s, SKY_HEADROOM - 3.4, BACK_WALL_Z + 18, 2, 0.8, 1]);
     }
 
     // --- the workshop ------------------------------------------------------
@@ -718,7 +717,7 @@ export default function TowerScene() {
     // A beam 3.5 units in front of the camera fills the whole width of the
     // frame; one crossing a title zone is a bar drawn straight over the type.
     // Skip those — the descent keeps its sense of speed from the rest.
-    for (let y = topY; y >= bottomY; y -= 18) {
+    for (let y = wallTop - 6; y >= bottomY; y -= 18) {
       if (!clearOfTitle(0, y, SHAFT_HALF_WIDTH, 2)) continue;
       box(0, [0, y, CAMERA_REST_Z - 3.5, SHAFT_HALF_WIDTH * 2 + 6, 1.6, 2]);
       box(1, [0, y - 1.4, CAMERA_REST_Z - 3.5, SHAFT_HALF_WIDTH * 2 + 6, 0.5, 2.4]);

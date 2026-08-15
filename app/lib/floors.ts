@@ -61,5 +61,10 @@ export const TOTAL_SPAN = FLOORS.reduce((sum, floor) => sum + floor.span, 0);
  * its heading is.
  */
 export function floorY(index: number): number {
-  return -index * FLOOR_PITCH;
+  // The hero sits 10 units below the shaft mouth so the first frame is
+  // already inside the masonry rather than looking down at it from above.
+  return -index * FLOOR_PITCH - HERO_DROP;
 }
+
+/** How far below the shaft mouth the hero floor sits. */
+export const HERO_DROP = 10;
