@@ -1059,9 +1059,68 @@ h3 {
 /* --- responsive ----------------------------------------------------------- */
 
 @media (max-width: 900px) {
+  :root {
+    --gutter: clamp(20px, 6vw, 40px);
+  }
+
+  /* No room beside the copy for a gauge on a phone; it would sit on the words. */
+  .hud {
+    display: none;
+  }
+
+  /* One column, but each item keeps its icon and reads as its own block:
+     roomier gaps, an explicit rhythm, no floating index numbers. */
   .roster,
   .pipeline {
+    gap: clamp(30px, 6svh, 48px);
     grid-template-columns: 1fr;
+  }
+
+  .roster-index {
+    display: none;
+  }
+
+  .roster-card,
+  .stage {
+    display: grid;
+    align-items: start;
+    column-gap: 18px;
+    grid-template-columns: auto 1fr;
+    grid-template-rows: auto auto auto;
+  }
+
+  /* Icon sits in the left column across every row; text stacks on the right.
+     The element itself stays ONE cell (--px square) — the other 63 cells are
+     box-shadows painted outside it — so the column is reserved with margins,
+     never by resizing the box. */
+  .roster-card .sprite,
+  .stage .sprite {
+    --px: 6px;
+    grid-row: 1 / span 3;
+    margin: 6px calc(var(--px) * 8) 0 0;
+    width: var(--px);
+    height: var(--px);
+  }
+
+  .stage-number {
+    font-size: clamp(30px, 8vw, 40px);
+  }
+
+  .stage h3,
+  .roster-card h3 {
+    margin-top: 0;
+    font-size: clamp(20px, 5.4vw, 26px);
+  }
+
+  .roster-card p,
+  .stage p {
+    margin-top: 6px;
+    font-size: 15px;
+    line-height: 1.5;
+  }
+
+  .roster-stat {
+    margin-top: 10px;
   }
 
   .stage::before,
@@ -1069,17 +1128,63 @@ h3 {
     display: none;
   }
 
-  .score-row {
-    grid-template-columns: auto 1fr;
+  /* Scoreboard on a phone: rank above name, fact under it, no leader. */
+  .scoreboard {
+    gap: 22px;
   }
 
-  .score-leader,
-  .score-value {
+  .score-row {
+    align-items: start;
+    column-gap: 14px;
+    grid-template-columns: auto 1fr;
+    grid-template-rows: auto auto;
+  }
+
+  .score-rank {
+    grid-row: 1 / span 2;
+    font-size: clamp(30px, 8vw, 40px);
+  }
+
+  .score-name {
+    font-size: clamp(20px, 5.4vw, 26px);
+    white-space: normal;
+  }
+
+  .score-leader {
     display: none;
+  }
+
+  .score-value {
+    font-size: 15px;
+    letter-spacing: 1px;
+    text-align: left;
+    white-space: normal;
   }
 
   .console {
     grid-template-columns: 1fr;
+  }
+
+  h2 {
+    font-size: clamp(38px, 10.5vw, 56px);
+  }
+
+  .floor-eyebrow {
+    font-size: 16px;
+    letter-spacing: 3px;
+  }
+
+  /* The fixed header is ~120px on a phone; nothing may start under it. */
+  .floor {
+    padding-top: 136px;
+  }
+
+  /* Contact is one viewport tall on desktop; on a phone the form needs more,
+     and its heading must sit clear of the logo, so it starts lower. */
+  .floor[data-floor="contact"] {
+    align-items: flex-start;
+    min-height: calc(1.4 * 100svh);
+    padding-top: 220px;
   }
 
   .floor[data-side="left"] .floor-inner,

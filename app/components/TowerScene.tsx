@@ -306,9 +306,29 @@ export default function TowerScene() {
      * world space. A tall floor (four process gates) puts its heading well
      * above centre; a short one barely. Measured, not guessed.
      */
-    const skyTitles: { mesh: THREE.Mesh; floorIndex: number; halfHeight: number }[] = [];
+    const skyTitles: { mesh: THREE.Mesh; floorIndex: number; halfHeight: number; aspect: number }[] = [];
     /** World units per CSS pixel at the wall, at the current viewport. */
     let worldPerPixel = 0.02;
+
+    /**
+     * Scales every sky title to the current frame. Desktop: 24 world units,
+     * which sits inside the shutter opening. Narrow viewports: ~86% of the
+     * visible width at the title's depth, so a two-line heading fits a phone
+     * in portrait instead of running off both edges.
+     */
+    const fitSkyTitles = () => {
+      const distance = CAMERA_REST_Z - (BACK_WALL_Z - 9);
+      const visibleH = 2 * distance * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
+      const visibleW = visibleH * camera.aspect;
+      const width = Math.min(24, visibleW * 0.68);
+      for (let i = 0; i < skyTitles.length; i += 1) {
+        const t = skyTitles[i];
+        t.mesh.scale.set(width, width, 1);
+        t.halfHeight = (width * t.aspect) / 2;
+        // Portrait: centre the title; there is no "side" to sit on.
+        if (camera.aspect < 1) t.mesh.position.x = 0;
+      }
+    };
 
     const buildSky = (lines: string[], floorIndex: number, side: "left" | "right" | "center") => {
       const tex = textureTitle(lines, 160, "#ffffff");
@@ -317,9 +337,11 @@ export default function TowerScene() {
       // occludes it and parallax makes it drift slower than the mosaic.
       // Wide enough to dominate the frame, small enough that a two-line
       // heading is read as a phrase rather than as one word at a time.
-      // Sized to sit inside the shutter opening at this depth: the zone is
-      // ~42 wide at the wall, which projects to ~50 at the title's depth.
-      const width = 24;
+      // Sized to sit inside the shutter opening at this depth on desktop.
+      // Actual width is set per viewport in fitSkyTitles(): on a portrait phone
+      // the visible width at the title's depth is far smaller than the
+      // opening, and the type must fit the frame, not the wall.
+      const width = 1;
       const geometry = keepGeometry(new THREE.PlaneGeometry(width, width * tex.aspect));
       const material = skyMaterial.clone();
       material.map = tex.texture;
@@ -334,9 +356,12 @@ export default function TowerScene() {
       const x = side === "left" ? -6 : side === "right" ? 6 : 0;
       mesh.position.set(x, floorY(floorIndex) + 4.5, BACK_WALL_Z - 9);
       mesh.renderOrder = -1;
-      world.add(mesh);
+      // In the scene, NOT the rotating world group. The global turn adds life
+      // to the masonry, but at this depth it would swing the type sideways by
+      // several units — enough to push it off a phone screen.
+      scene.add(mesh);
       titles.push({ root: mesh, floorIndex, side });
-      skyTitles.push({ mesh, floorIndex, halfHeight: (width * tex.aspect) / 2 });
+      skyTitles.push({ mesh, floorIndex, halfHeight: (width * tex.aspect) / 2, aspect: tex.aspect });
     };
 
     /* --- carved ------------------------------------------------------------- */
@@ -521,7 +546,7 @@ export default function TowerScene() {
           ? side === "left" ? -4 : side === "right" ? 4 : 0
           : side === "left" ? 5.5 : side === "right" ? -5.5 : 0;
         const halfW = sky ? 20 : side === "center" ? 15 : 12;
-        const halfH = sky ? 18 : 8;
+        const halfH = sky ? 22 : 8;
         if (Math.abs(y - cy) < halfH && Math.abs(x - cx) < halfW) {
           return { index: i, cx, cy, halfW, halfH };
         }
@@ -608,7 +633,7 @@ export default function TowerScene() {
         const side = FLOORS[i].side;
         const cy = floorY(i) + 7;
         const cx = side === "left" ? -4 : side === "right" ? 4 : 0;
-        if (Math.abs(y - cy) < 18 + halfH && Math.abs(x - cx) < 20 + halfW) return false;
+        if (Math.abs(y - cy) < 22 + halfH && Math.abs(x - cx) < 20 + halfW) return false;
       }
       return true;
     };
@@ -678,7 +703,11 @@ export default function TowerScene() {
     box(4, [11, workshopY - 3, BACK_WALL_Z + 6, 20, 0.4, 2.8]);
 
     // --- the near layer: beams that whip past ------------------------------
+    // A beam 3.5 units in front of the camera fills the whole width of the
+    // frame; one crossing a title zone is a bar drawn straight over the type.
+    // Skip those — the descent keeps its sense of speed from the rest.
     for (let y = topY; y >= bottomY; y -= 18) {
+      if (!clearOfTitle(0, y, SHAFT_HALF_WIDTH, 2)) continue;
       box(0, [0, y, CAMERA_REST_Z - 3.5, SHAFT_HALF_WIDTH * 2 + 6, 1.6, 2]);
       box(1, [0, y - 1.4, CAMERA_REST_Z - 3.5, SHAFT_HALF_WIDTH * 2 + 6, 0.5, 2.4]);
       for (let x = -15; x <= 15; x += 5) box(2, [x, y, CAMERA_REST_Z - 2.2, 1, 1, 1]);
@@ -738,7 +767,10 @@ export default function TowerScene() {
           const near = 1 - THREE.MathUtils.smootherstep(away, 0.12, 0.72);
           // Only cells within the title's vertical band actually part; the
           // rest of the zone stays as wall. The band follows the measured title.
-          const bandDist = Math.abs(c.y - titleWorldY[c.floorIndex]);
+          // Above the title centre the band reaches further: the block is two
+          // lines tall and it is the top line that has been getting cut.
+          const dy = c.y - titleWorldY[c.floorIndex];
+          const bandDist = dy > 0 ? dy * 0.75 : -dy;
           const inBand = 1 - THREE.MathUtils.smootherstep(bandDist, 9, 14);
           const open = THREE.MathUtils.clamp(near * inBand - c.lag * 0.35, 0, 1) / (1 - c.lag * 0.35);
           const eased = THREE.MathUtils.smootherstep(open, 0, 1);
@@ -859,13 +891,26 @@ export default function TowerScene() {
         );
         if (!inner) return;
         const rect = inner.getBoundingClientRect();
-        const centre = rect.top + window.scrollY + rect.height / 2;
+        const heading = document.querySelector<HTMLElement>(`#${floor.id}-title`);
+        // The scroll position at which this floor is "in view". Normally the
+        // one that centres the copy block; but if that would put the heading
+        // under the fixed header (tall block on a short screen), slide the
+        // anchor so the heading sits just below the header instead. The 3D
+        // title follows the heading, so it stays readable either way.
+        let centre = rect.top + window.scrollY + rect.height / 2;
+        if (heading) {
+          const headerPx = document.querySelector<HTMLElement>(".site-header")?.offsetHeight ?? 90;
+          const hr = heading.getBoundingClientRect();
+          const headingDoc = hr.top + window.scrollY;
+          const headingOnScreen = headingDoc - (centre - viewportHeight / 2);
+          const minTop = headerPx + 24;
+          if (headingOnScreen < minTop) centre -= minTop - headingOnScreen;
+        }
         const p = THREE.MathUtils.clamp((centre - viewportHeight / 2) / scrollMax, 0, 1);
         next.push({ p, y: floorY(index) });
         floorProgressCentre[index] = p;
 
         // Where is this floor's heading relative to the floor centre, in px?
-        const heading = document.querySelector<HTMLElement>(`#${floor.id}-title`);
         if (heading) {
           const hr = heading.getBoundingClientRect();
           const headingCentre = hr.top + window.scrollY + hr.height / 2;
@@ -880,9 +925,16 @@ export default function TowerScene() {
             // margin for the fixed header. Tall floors push their heading far
             // above centre; the title follows only as far as it can be read.
             const visibleHalfAtTitle = (viewportHeight * worldPerPixel * depthRatio) / 2;
-            const maxUp = visibleHalfAtTitle - sky.halfHeight - 3.5;
+            // Keep clear of the fixed header (logo) — measure it, don't guess.
+            const headerPx = document.querySelector<HTMLElement>(".site-header")?.offsetHeight ?? 90;
+            const headerWorld = headerPx * worldPerPixel * depthRatio;
+            // Portrait needs a real gap under the logo; landscape has the logo
+            // in a corner and the title beside/below it, so a hair will do.
+            const gap = camera.aspect < 1 ? 2.5 : 0.5;
+            const maxUp = visibleHalfAtTitle - sky.halfHeight - headerWorld - gap;
             const wanted = offsetPx * worldPerPixel * depthRatio;
-            const applied = THREE.MathUtils.clamp(wanted, -maxUp, maxUp);
+            const maxDown = visibleHalfAtTitle - sky.halfHeight - 1;
+            const applied = THREE.MathUtils.clamp(wanted, -maxDown, maxUp);
             sky.mesh.position.y = floorY(index) + applied;
             // The wall zone is at wall depth, so it uses the un-scaled offset.
             titleWorldY[index] = floorY(index) + applied / depthRatio;
@@ -987,6 +1039,7 @@ export default function TowerScene() {
       const distance = CAMERA_REST_Z - BACK_WALL_Z;
       const visibleHeight = 2 * distance * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
       worldPerPixel = visibleHeight / nextHeight;
+      fitSkyTitles();
       measure();
       readProgress();
     };
@@ -1014,7 +1067,10 @@ export default function TowerScene() {
       const lookAhead = 2.2 + THREE.MathUtils.clamp(descentSpeed * 26, 0, 9);
 
       camera.position.y = mapY(eased);
-      camera.position.x = Math.sin(eased * Math.PI * 3.7) * 1.6 + parallax.x * 0.9;
+      // Portrait has no lateral slack; the sway that adds life on desktop
+      // pushes a frame-fitted title off the edge on a phone.
+      const sway = camera.aspect < 1 ? 0.35 : 1;
+      camera.position.x = (Math.sin(eased * Math.PI * 3.7) * 1.6 + parallax.x * 0.9) * sway;
       camera.position.z = CAMERA_REST_Z + Math.sin(eased * Math.PI * 2.3) * 1.4 + parallax.y * 0.35;
       camera.lookAt(
         camera.position.x * -0.2 + parallax.x * 1.4,
@@ -1118,6 +1174,8 @@ export default function TowerScene() {
       if (textReady) return;
       textReady = true;
       buildText();
+      fitSkyTitles();
+      measure();
       // In dom mode the HTML headings ARE the titles; leave them visible.
       if (titleMode !== "dom") document.body.classList.add("scene-text");
     };

@@ -18,22 +18,18 @@ function canRunScene(): boolean {
   // Honouring an explicit request to save data is free and correct.
   if (window.matchMedia("(prefers-reduced-data: reduce)").matches) return false;
 
-  // A small phone with little memory or few cores gets the static page. A great
-  // static page beats a bad 3D one.
-  const cores = navigator.hardwareConcurrency ?? 8;
-  const memory = (navigator as Navigator & { deviceMemory?: number }).deviceMemory ?? 8;
-  if (window.innerWidth < 480 && (cores <= 4 || memory < 4)) return false;
-
+  // No device-tier heuristics. The scene is ~18 draw calls and ~22k triangles
+  // — a 2018 phone runs it. An earlier cores/memory gate wrongly turned the
+  // scene off on real iPhones, whose Safari reports few or no cores.
   try {
     const probe = document.createElement("canvas");
     const gl =
       probe.getContext("webgl2") ??
       probe.getContext("webgl") ??
       probe.getContext("experimental-webgl");
-    if (!gl) return false;
-    // Release the probe context immediately; browsers cap concurrent contexts.
-    (gl as WebGLRenderingContext).getExtension("WEBGL_lose_context")?.loseContext();
-    return true;
+    // Do NOT lose the probe context here: on Safari that can poison the
+    // context the real renderer is about to create on another canvas.
+    return !!gl;
   } catch {
     return false;
   }
