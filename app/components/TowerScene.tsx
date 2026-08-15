@@ -300,6 +300,16 @@ export default function TowerScene() {
     );
 
     /* --- sky ---------------------------------------------------------------- */
+    /**
+     * Sky titles are positioned from the DOM: wherever the HTML heading sits
+     * relative to its floor's centre, the sky title sits at the same offset in
+     * world space. A tall floor (four process gates) puts its heading well
+     * above centre; a short one barely. Measured, not guessed.
+     */
+    const skyTitles: { mesh: THREE.Mesh; floorIndex: number; halfHeight: number }[] = [];
+    /** World units per CSS pixel at the wall, at the current viewport. */
+    let worldPerPixel = 0.02;
+
     const buildSky = (lines: string[], floorIndex: number, side: "left" | "right" | "center") => {
       const tex = textureTitle(lines, 160, "#ffffff");
       if (!tex) return;
@@ -307,19 +317,26 @@ export default function TowerScene() {
       // occludes it and parallax makes it drift slower than the mosaic.
       // Wide enough to dominate the frame, small enough that a two-line
       // heading is read as a phrase rather than as one word at a time.
-      const width = 26;
+      // Sized to sit inside the shutter opening at this depth: the zone is
+      // ~42 wide at the wall, which projects to ~50 at the title's depth.
+      const width = 24;
       const geometry = keepGeometry(new THREE.PlaneGeometry(width, width * tex.aspect));
       const material = skyMaterial.clone();
       material.map = tex.texture;
-      material.opacity = 0.92;
+      material.opacity = 1;
       keepMaterial(material);
       const mesh = new THREE.Mesh(geometry, material);
       // Sit the type in the half of the frame the copy is NOT in.
-      const x = side === "left" ? 5 : side === "right" ? -5 : 0;
-      mesh.position.set(x, floorY(floorIndex) + 3, BACK_WALL_Z - 9);
+      // Same side as the copy — it is the floor's heading, sitting above the
+      // body text like any h2 — and high enough that the body never overlaps
+      // it. Deeper things appear nearer the centre, so the lateral offset is
+      // larger than the wall zone's to land in the same screen column.
+      const x = side === "left" ? -6 : side === "right" ? 6 : 0;
+      mesh.position.set(x, floorY(floorIndex) + 4.5, BACK_WALL_Z - 9);
       mesh.renderOrder = -1;
       world.add(mesh);
       titles.push({ root: mesh, floorIndex, side });
+      skyTitles.push({ mesh, floorIndex, halfHeight: (width * tex.aspect) / 2 });
     };
 
     /* --- carved ------------------------------------------------------------- */
@@ -462,32 +479,88 @@ export default function TowerScene() {
     // --- the shaft ---------------------------------------------------------
 
     /**
-     * The zone around every floor's heading. What happens there depends on the
-     * title mode:
-     *  sky     — the wall OPENS: no backing, mosaic thinned to a scatter, so the
-     *            giant type behind is seen through the gaps in the masonry.
-     *  carved  — the relief supplies its own flat stone; mosaic thinned.
-     *  others  — mosaic thinned so bright cells never sit behind the type.
+     * The zone around every floor's heading.
+     *
+     * In sky mode this is where the SHUTTER lives: the wall here is built from
+     * its own instanced mesh whose cells slide apart, like a curtain, as the
+     * floor scrolls into view — closed masonry from a distance, an opening onto
+     * the giant title when you arrive, and closing again behind you. Every cell
+     * remembers its rest pose and which way it parts; the per-frame update is
+     * one matrix write per cell driven by scroll distance, nothing more.
+     *
+     * In the other modes the zone is simply thinned so nothing bright sits
+     * behind the type.
      */
-    const inQuietZone = (x: number, y: number) => {
+    interface ShutterCell {
+      x: number;
+      y: number;
+      z: number;
+      sx: number;
+      sy: number;
+      sz: number;
+      colour: number;
+      floorIndex: number;
+      /** -1 slides left, +1 slides right. */
+      dir: number;
+      /** 0..1 — how far from the zone centre; outer cells travel less. */
+      edge: number;
+      /** Per-cell stagger so the curtain ripples instead of snapping. */
+      lag: number;
+    }
+    const shutterCells: ShutterCell[] = [];
+
+    const zoneOf = (x: number, y: number) => {
       for (let i = 0; i < FLOORS.length; i += 1) {
+        // Only floors that actually hang a title in the scene get a zone.
+        const copy = FLOOR_TEXT[FLOORS[i].id];
+        if (!copy || copy.title.length === 0) continue;
         const side = FLOORS[i].side;
-        const cy = floorY(i) + 4;
-        const cx = side === "left" ? 5.5 : side === "right" ? -5.5 : 0;
-        const halfW = titleMode === "sky" ? 20 : side === "center" ? 15 : 12;
-        const halfH = titleMode === "sky" ? 11 : 8;
-        if (Math.abs(y - cy) < halfH && Math.abs(x - cx) < halfW) return true;
+        const sky = titleMode === "sky";
+        const cy = floorY(i) + (sky ? 7 : 4);
+        const cx = sky
+          ? side === "left" ? -4 : side === "right" ? 4 : 0
+          : side === "left" ? 5.5 : side === "right" ? -5.5 : 0;
+        const halfW = sky ? 20 : side === "center" ? 15 : 12;
+        const halfH = sky ? 18 : 8;
+        if (Math.abs(y - cy) < halfH && Math.abs(x - cx) < halfW) {
+          return { index: i, cx, cy, halfW, halfH };
+        }
       }
-      return false;
+      return null;
+    };
+    const inQuietZone = (x: number, y: number) => zoneOf(x, y) !== null;
+
+    /** Registers a wall cell either as static masonry or as a shutter cell. */
+    const wallCell = (colour: number, b: Box) => {
+      const [x, y] = b;
+      const zone = titleMode === "sky" ? zoneOf(x, y) : null;
+      if (!zone) {
+        box(colour, b);
+        return;
+      }
+      const dx = (x - zone.cx) / zone.halfW; // -1..1
+      const dy = (y - zone.cy) / zone.halfH;
+      shutterCells.push({
+        x: b[0], y: b[1], z: b[2], sx: b[3], sy: b[4], sz: b[5],
+        colour,
+        floorIndex: zone.index,
+        dir: dx < 0 ? -1 : 1,
+        edge: Math.min(1, Math.abs(dx)),
+        lag: Math.abs(dy) * 0.2 + hash(Math.round(x), Math.round(y)) * 0.2,
+      });
     };
 
-    // Backing plane, in 2-unit bands so it can be omitted where the sky
-    // titles need to show through.
+    // Backing plane, in 2-unit bands. In sky mode the bands behind the titles
+    // become shutter cells too, so the backing itself parts to reveal the type.
     for (let y = topY; y >= bottomY; y -= 2) {
-      if (titleMode === "sky" && inQuietZone(0, y)) {
-        // Keep the very edges so the shaft still reads as enclosed.
+      const zone = titleMode === "sky" ? zoneOf(0, y) : null;
+      if (zone) {
+        // Split the band into two halves that slide apart, plus fixed edges.
         box(0, [-SHAFT_HALF_WIDTH - 1, y, BACK_WALL_Z - 1.5, 4, 2, 1]);
         box(0, [SHAFT_HALF_WIDTH + 1, y, BACK_WALL_Z - 1.5, 4, 2, 1]);
+        const half = SHAFT_HALF_WIDTH - 1;
+        wallCell(0, [-half / 2, y, BACK_WALL_Z - 1.5, half, 2, 1]);
+        wallCell(0, [half / 2, y, BACK_WALL_Z - 1.5, half, 2, 1]);
         continue;
       }
       box(0, [0, y, BACK_WALL_Z - 1.5, SHAFT_HALF_WIDTH * 2 + 4, 2, 1]);
@@ -499,12 +572,12 @@ export default function TowerScene() {
         const row = Math.round(y / 2);
         const r = hash(col, row);
         if (r < 0.44) continue;
-        if (inQuietZone(col * 2, y) && r < (titleMode === "sky" ? 0.82 : 0.9)) continue;
+        if (titleMode !== "sky" && inQuietZone(col * 2, y) && r < 0.9) continue;
         const band = Math.abs(row) % 8;
         const depth = r < 0.62 ? 0.4 : r < 0.85 ? 1.3 : 2.4;
         let colour = r < 0.62 ? 1 : r < 0.85 ? 2 : 4;
         if (band === 0) colour = 5;
-        box(colour, [col * 2, y, BACK_WALL_Z + depth, 2, 2, depth * 2]);
+        wallCell(colour, [col * 2, y, BACK_WALL_Z + depth, 2, 2, depth * 2]);
       }
     }
 
@@ -521,11 +594,31 @@ export default function TowerScene() {
       }
     }
 
+    /**
+     * True when a box would sit in front of a sky title. Everything below uses
+     * it to keep the reading column clear: the shutters part the WALL, but the
+     * far silhouettes, platforms, pickups and runway lights are separate
+     * geometry and would otherwise stay put in front of the type.
+     */
+    const clearOfTitle = (x: number, y: number, halfW: number, halfH: number) => {
+      if (titleMode !== "sky") return true;
+      for (let i = 0; i < FLOORS.length; i += 1) {
+        const copy = FLOOR_TEXT[FLOORS[i].id];
+        if (!copy || copy.title.length === 0) continue;
+        const side = FLOORS[i].side;
+        const cy = floorY(i) + 7;
+        const cx = side === "left" ? -4 : side === "right" ? 4 : 0;
+        if (Math.abs(y - cy) < 18 + halfH && Math.abs(x - cx) < 20 + halfW) return false;
+      }
+      return true;
+    };
+
     // --- far silhouettes, glimpsed through the gaps -------------------------
     for (let y = topY; y >= bottomY; y -= 9) {
       const r = hash(7, Math.round(y));
       const x = (r - 0.5) * 26;
       const height = 6 + r * 12;
+      if (!clearOfTitle(x, y, 4, height / 2)) continue;
       box(0, [x, y, BACK_WALL_Z - 5, 3 + r * 4, height, 2]);
       box(0, [x + 6, y - 4, BACK_WALL_Z - 6, 2, height * 0.6, 2]);
     }
@@ -554,6 +647,7 @@ export default function TowerScene() {
       const left = i % 2 === 0;
       const x = left ? -12 : 12;
       const width = 8 + hash(i, 3) * 4;
+      if (!clearOfTitle(x, y, width / 2, 2)) continue;
       box(1, [x, y, BACK_WALL_Z + 6, width, 1.5, 7]);
       for (let s = -Math.floor(width / 2); s <= Math.floor(width / 2); s += 2) {
         box(s % 4 === 0 ? 7 : 1, [x + s, y + 1.1, BACK_WALL_Z + 9, 2, 0.6, 1]);
@@ -607,41 +701,94 @@ export default function TowerScene() {
       instanced.push(mesh);
     });
 
-    // --- chevrons pointing down the shaft ----------------------------------
-    const chevronCells: [x: number, y: number, group: number][] = [];
-    for (let g = 0; g < 40; g += 1) {
-      const baseY = topY - 4 - g * 7;
-      if (baseY < bottomY) break;
-      for (let arm = -2; arm <= 2; arm += 1) {
-        chevronCells.push([arm * 1.1, baseY - Math.abs(arm) * 1.1, g]);
-      }
+    // --- the shutters: one instanced mesh per colour, rewritten per frame ----
+    const shutterMeshes: { mesh: THREE.InstancedMesh; cells: ShutterCell[] }[] = [];
+    if (shutterCells.length > 0) {
+      const byColour = new Map<number, ShutterCell[]>();
+      shutterCells.forEach((cell) => {
+        const list = byColour.get(cell.colour) ?? [];
+        list.push(cell);
+        byColour.set(cell.colour, list);
+      });
+      byColour.forEach((cells, colour) => {
+        const mesh = new THREE.InstancedMesh(unitBox, litMaterials[colour], cells.length);
+        mesh.frustumCulled = false;
+        world.add(mesh);
+        instanced.push(mesh);
+        shutterMeshes.push({ mesh, cells });
+      });
     }
 
-    const chevronMaterial = keepMaterial(
-      new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.9, fog: false }),
+    /**
+     * Slides the shutter cells apart around whichever floor is in view.
+     *
+     * `open` is 0 a full floor away and 1 when the floor is centred, eased so
+     * the curtain starts to part just before the title arrives and is fully
+     * open while you read. Cells travel sideways by up to 20 units, outer cells
+     * less than inner ones (so the opening is widest at the centre), and each
+     * has a small stagger so the motion ripples down the wall.
+     */
+    const animateShutters = (progress: number) => {
+      for (let m = 0; m < shutterMeshes.length; m += 1) {
+        const { mesh, cells } = shutterMeshes[m];
+        for (let i = 0; i < cells.length; i += 1) {
+          const c = cells[i];
+          const away = Math.abs(progress - floorProgressCentre[c.floorIndex]) / floorProgressSpan;
+          // 1 when the floor is centred, 0 beyond ~0.75 of a floor away.
+          const near = 1 - THREE.MathUtils.smootherstep(away, 0.12, 0.72);
+          // Only cells within the title's vertical band actually part; the
+          // rest of the zone stays as wall. The band follows the measured title.
+          const bandDist = Math.abs(c.y - titleWorldY[c.floorIndex]);
+          const inBand = 1 - THREE.MathUtils.smootherstep(bandDist, 9, 14);
+          const open = THREE.MathUtils.clamp(near * inBand - c.lag * 0.35, 0, 1) / (1 - c.lag * 0.35);
+          const eased = THREE.MathUtils.smootherstep(open, 0, 1);
+          const travel = (1 - c.edge * 0.5) * 24 * eased;
+          position.set(c.x + c.dir * travel, c.y, c.z);
+          scale.set(c.sx, c.sy, c.sz);
+          matrix.compose(position, quaternion, scale);
+          mesh.setMatrixAt(i, matrix);
+        }
+        mesh.instanceMatrix.needsUpdate = true;
+      }
+    };
+
+    // --- sparks: loose points of light scattered through the shaft ----------
+    // Not in formation, not on a path — just a field of small emissive voxels
+    // at random depths that each breathe on their own clock. They give the air
+    // in the shaft something to be made of, and stay out of the reading column.
+    const sparks: [x: number, y: number, z: number, phase: number, size: number][] = [];
+    for (let i = 0; i < 160; i += 1) {
+      const y = topY - hash(i, 11) * (topY - bottomY);
+      const x = (hash(i, 12) - 0.5) * (SHAFT_HALF_WIDTH * 2 - 4);
+      const z = BACK_WALL_Z + 2 + hash(i, 13) * (CAMERA_REST_Z - BACK_WALL_Z - 6);
+      if (!clearOfTitle(x, y, 1, 1)) continue;
+      sparks.push([x, y, z, hash(i, 14) * Math.PI * 2, 0.35 + hash(i, 15) * 0.5]);
+    }
+
+    const sparkMaterial = keepMaterial(
+      new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.95, fog: false }),
     );
-    const chevrons = new THREE.InstancedMesh(unitBox, chevronMaterial, chevronCells.length);
-    chevrons.frustumCulled = false;
-    chevrons.instanceColor = new THREE.InstancedBufferAttribute(
-      new Float32Array(chevronCells.length * 3),
-      3,
-    );
-    chevronCells.forEach(([x, y], i) => {
-      position.set(x, y, BACK_WALL_Z + 3);
-      scale.set(0.9, 0.9, 0.4);
+    const sparkMesh = new THREE.InstancedMesh(unitBox, sparkMaterial, sparks.length);
+    sparkMesh.frustumCulled = false;
+    sparkMesh.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(sparks.length * 3), 3);
+    sparks.forEach(([x, y, z, , size], i) => {
+      position.set(x, y, z);
+      scale.setScalar(size);
       matrix.compose(position, quaternion, scale);
-      chevrons.setMatrixAt(i, matrix);
+      sparkMesh.setMatrixAt(i, matrix);
     });
-    chevrons.instanceMatrix.needsUpdate = true;
-    world.add(chevrons);
-    instanced.push(chevrons);
+    sparkMesh.instanceMatrix.needsUpdate = true;
+    world.add(sparkMesh);
+    instanced.push(sparkMesh);
 
     // --- collectibles marking the route ------------------------------------
     const coinAnchors: [x: number, y: number][] = [];
     for (let i = 0; i < COIN_COUNT; i += 1) {
       const y = topY - 8 - i * 8;
       if (y < bottomY) break;
-      coinAnchors.push([Math.sin(i * 0.8) * 12, y]);
+      const cx = Math.sin(i * 0.8) * 12;
+      if (!clearOfTitle(cx, y, 1, 1)) continue;
+      coinAnchors.push([cx, y]);
     }
     const coinMaterial = keepMaterial(
       posterize(new THREE.MeshLambertMaterial({ color: new THREE.Color(EMISSIVE.signal) })),
@@ -664,9 +811,9 @@ export default function TowerScene() {
     const rawColour = new THREE.Color(PALETTE[3]);
     const doneColour = new THREE.Color(EMISSIVE.signal);
     const partColour = new THREE.Color();
-    const chevronColour = new THREE.Color();
-    const chevronDim = new THREE.Color(PALETTE[4]);
-    const chevronLit = new THREE.Color(EMISSIVE.hot);
+    const sparkColour = new THREE.Color();
+    const sparkDim = new THREE.Color(PALETTE[5]);
+    const sparkLit = new THREE.Color(EMISSIVE.hot);
 
     /* ------------------------------------------------------ hang the titles */
 
@@ -691,6 +838,8 @@ export default function TowerScene() {
     /** Scroll progress at which each floor's copy is centred; filled by measure(). */
     const floorProgressCentre: number[] = FLOORS.map(() => 0);
     let floorProgressSpan = 0.2;
+    /** World Y of each floor's sky title, as last measured from the DOM. */
+    const titleWorldY: number[] = FLOORS.map((_, i) => floorY(i) + 4.5);
 
     /* --------------------------------------------------------- scroll model */
 
@@ -714,6 +863,31 @@ export default function TowerScene() {
         const p = THREE.MathUtils.clamp((centre - viewportHeight / 2) / scrollMax, 0, 1);
         next.push({ p, y: floorY(index) });
         floorProgressCentre[index] = p;
+
+        // Where is this floor's heading relative to the floor centre, in px?
+        const heading = document.querySelector<HTMLElement>(`#${floor.id}-title`);
+        if (heading) {
+          const hr = heading.getBoundingClientRect();
+          const headingCentre = hr.top + window.scrollY + hr.height / 2;
+          const offsetPx = centre - headingCentre; // positive = heading above centre
+          const sky = skyTitles.find((t) => t.floorIndex === index);
+          if (sky) {
+            // The title is deeper than the wall, so a screen offset maps to a
+            // larger world offset there — scale by depth ratio.
+            const depthRatio = (CAMERA_REST_Z - (BACK_WALL_Z - 9)) / (CAMERA_REST_Z - BACK_WALL_Z);
+            // Never let the title leave the frame: clamp its centre so the
+            // whole block stays inside the visible height at its depth, with a
+            // margin for the fixed header. Tall floors push their heading far
+            // above centre; the title follows only as far as it can be read.
+            const visibleHalfAtTitle = (viewportHeight * worldPerPixel * depthRatio) / 2;
+            const maxUp = visibleHalfAtTitle - sky.halfHeight - 3.5;
+            const wanted = offsetPx * worldPerPixel * depthRatio;
+            const applied = THREE.MathUtils.clamp(wanted, -maxUp, maxUp);
+            sky.mesh.position.y = floorY(index) + applied;
+            // The wall zone is at wall depth, so it uses the un-scaled offset.
+            titleWorldY[index] = floorY(index) + applied / depthRatio;
+          }
+        }
       });
       if (next.length >= 2) {
         anchors = next;
@@ -809,6 +983,10 @@ export default function TowerScene() {
       camera.updateProjectionMatrix();
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, mobile ? 1.5 : 2));
       renderer.setSize(window.innerWidth, nextHeight, false);
+      // Visible world height at the back wall, per CSS pixel.
+      const distance = CAMERA_REST_Z - BACK_WALL_Z;
+      const visibleHeight = 2 * distance * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
+      worldPerPixel = visibleHeight / nextHeight;
       measure();
       readProgress();
     };
@@ -850,6 +1028,7 @@ export default function TowerScene() {
       applyTheme(eased);
 
       if (titleMode === "assemble") animateAssemble(eased);
+      if (shutterMeshes.length > 0) animateShutters(eased);
 
       // DOM body copy is pushed by the same pointer parallax, so the words and
       // the shaft feel like one space rather than two layers.
@@ -886,14 +1065,16 @@ export default function TowerScene() {
         quaternion.identity();
         coins.instanceMatrix.needsUpdate = true;
 
-        // Chevrons fire in sequence, like a runway.
-        for (let i = 0; i < chevronCells.length; i += 1) {
-          const phase = (elapsed * 1.6 - chevronCells[i][2] * 0.25) % 1;
-          const lit = phase > 0 && phase < 0.28 ? 1 : 0.12;
-          chevronColour.copy(chevronDim).lerp(chevronLit, lit);
-          chevrons.setColorAt(i, chevronColour);
+        // Sparks breathe on their own clocks: mostly dim, occasionally bright,
+        // never in step with each other.
+        for (let i = 0; i < sparks.length; i += 1) {
+          const phase = sparks[i][3];
+          const pulse = Math.sin(elapsed * (0.9 + phase * 0.3) + phase * 7);
+          const lit = pulse > 0.72 ? (pulse - 0.72) / 0.28 : 0;
+          sparkColour.copy(sparkDim).lerp(sparkLit, 0.25 + lit * 0.75);
+          sparkMesh.setColorAt(i, sparkColour);
         }
-        if (chevrons.instanceColor) chevrons.instanceColor.needsUpdate = true;
+        if (sparkMesh.instanceColor) sparkMesh.instanceColor.needsUpdate = true;
       }
 
       renderer.render(scene, camera);

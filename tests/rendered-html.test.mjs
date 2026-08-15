@@ -13,7 +13,10 @@ test("exports the The Last Click landing page", async () => {
   assert.match(page, /Bold Ideas\./i);
   assert.match(page, /One Last Click\./i);
   assert.match(page, /We turn ambitious ideas into AI-powered products that actually work\./i);
-  assert.match(page, /mailto:hello@thelastclick\.gr/i);
+  // The address is deliberately NOT in the page: enquiries go through the
+  // relay in ContactForm, so scrapers get nothing.
+  assert.doesNotMatch(page, /mailto:/i, "email address is exposed in the page");
+  assert.match(page, /<form[^>]+class="console"/, "contact form is missing");
   assert.match(page, /The Last Click © 2026/i);
 });
 
@@ -33,7 +36,7 @@ test("every floor's copy is in the static HTML, not injected by JS", async () =>
   assert.match(page, /Web apps &amp; design systems|Web apps & design systems/i);
   assert.match(page, /iOS and Android/i);
   assert.match(page, /Frame/);
-  assert.match(page, /Ship in weeks, not quarters/i);
+  assert.match(page, /Weeks, not quarters/i);
 });
 
 test("keeps the accessibility affordances the scene depends on", async () => {

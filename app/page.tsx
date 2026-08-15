@@ -1,4 +1,6 @@
 import Image from "next/image";
+import BootScreen from "./components/BootScreen";
+import ContactForm from "./components/ContactForm";
 import Hud from "./components/Hud";
 import TowerSceneMount from "./components/TowerSceneMount";
 import { FLOORS } from "./lib/floors";
@@ -12,57 +14,45 @@ const PIXELS = [
   "eight", "nine", "ten", "eleven", "twelve", "thirteen",
 ];
 
+/**
+ * Each service is a "class" on a character-select screen: a big pixel icon,
+ * a name, and two lines. The icons are 8×8 sprites drawn with box-shadow in
+ * CSS (see .sprite-*), so they cost no images and scale with the type.
+ */
 const SERVICES = [
   {
+    sprite: "brain",
     title: "AI-first products",
-    body: "You bring the ambition. We take it from a sentence to something people can actually use — the model, the interface, the plumbing underneath, and the judgment about which of the three is actually the hard part.",
+    body: "From a sentence to something people use. Model, interface, plumbing — and the judgment about which one is the hard part.",
+    stat: "IDEA → SHIPPED",
   },
   {
+    sprite: "phone",
     title: "Mobile apps & games",
-    body: "Native iOS and Android, from the first sketch to a passed review. We have walked our own work through both stores, so we know where they bite.",
+    body: "Native iOS and Android, first sketch to passed review. We've walked our own work through both stores.",
+    stat: "iOS + ANDROID",
   },
   {
+    sprite: "grid",
     title: "Web apps & design systems",
-    body: "Interfaces that stay coherent as they grow, and the system underneath that keeps them that way once more than one person is touching them.",
+    body: "Interfaces that stay coherent as they grow, and the system underneath that keeps them that way.",
+    stat: "SYSTEM-FIRST",
   },
 ];
 
+/** The scoreboard. Rank, name, dotted leader, the fact. */
 const PROOF = [
-  {
-    title: "From idea to store",
-    body: "Our own products go the whole distance — design, build, submission, review, release. Nothing gets handed off at the interesting part.",
-  },
-  {
-    title: "iOS and Android",
-    body: "Both platforms. Both review processes. Both sets of unwritten rules, learned the expensive way so you don't have to.",
-  },
-  {
-    title: "We ship what we sell",
-    body: "Every technique on this page came out of building something real first. We are our own most demanding client.",
-  },
+  { rank: "1ST", title: "From idea to store", value: "The whole distance, every time" },
+  { rank: "2ND", title: "iOS and Android", value: "Both platforms, both reviews" },
+  { rank: "3RD", title: "We ship what we sell", value: "Built for ourselves first" },
 ];
 
+/** The pipeline. Four stages, one line, arrows between. */
 const PROCESS = [
-  {
-    step: "01",
-    title: "Frame",
-    body: "Find the real problem. Most briefs describe a solution — we go looking for what's underneath it before anyone opens an editor.",
-  },
-  {
-    step: "02",
-    title: "Design",
-    body: "Draw it before building it. Decisions are cheap on a canvas and expensive in code.",
-  },
-  {
-    step: "03",
-    title: "Build",
-    body: "Ship in weeks, not quarters. AI raises the floor, not the ceiling — taste and judgment still do the hard part.",
-  },
-  {
-    step: "04",
-    title: "Ship",
-    body: "Through review and into hands. The work isn't finished when it compiles.",
-  },
+  { step: "01", sprite: "target", title: "Frame", body: "Find the real problem before anyone opens an editor." },
+  { step: "02", sprite: "pencil", title: "Design", body: "Draw it first. Decisions are cheap on a canvas." },
+  { step: "03", sprite: "hammer", title: "Build", body: "Weeks, not quarters. AI raises the floor, taste raises the ceiling." },
+  { step: "04", sprite: "rocket", title: "Ship", body: "Through review, into hands. Compiling isn't finished." },
 ];
 
 function FloorSection({
@@ -95,6 +85,7 @@ export default function Home() {
 
   return (
     <>
+      <BootScreen />
       <a className="skip-link" href="#contact">
         Skip to contact
       </a>
@@ -112,7 +103,7 @@ export default function Home() {
         <a className="brand" href="#hero" aria-label="The Last Click home">
           <Image src="/TLC-logo.png" alt="The Last Click" width={200} height={148} priority />
         </a>
-        <a className="contact-link" href="mailto:hello@thelastclick.gr">
+        <a className="contact-link" href="#contact">
           Contact
         </a>
       </header>
@@ -135,14 +126,16 @@ export default function Home() {
         <FloorSection {...floor("services")}>
           <p className="floor-eyebrow">What we build</p>
           <h2 id="services-title">Three things, done properly.</h2>
-          <ul className="panel-list">
+          <ul className="roster">
             {SERVICES.map((service, index) => (
-              <li key={service.title} className="panel">
-                <span className="panel-tag" aria-hidden="true">
+              <li key={service.title} className="roster-card">
+                <span className={`sprite sprite-${service.sprite}`} aria-hidden="true" />
+                <span className="roster-index" aria-hidden="true">
                   {String(index + 1).padStart(2, "0")}
                 </span>
                 <h3>{service.title}</h3>
                 <p>{service.body}</p>
+                <span className="roster-stat">{service.stat}</span>
               </li>
             ))}
           </ul>
@@ -151,32 +144,30 @@ export default function Home() {
         <FloorSection {...floor("proof")}>
           <p className="floor-eyebrow">Track record</p>
           <h2 id="proof-title">Shipped, not shelved.</h2>
-          <ul className="panel-list">
-            {PROOF.map((item) => (
-              <li key={item.title} className="panel">
-                <span className="panel-tag" aria-hidden="true">
-                  ★
-                </span>
-                <h3>{item.title}</h3>
-                <p>{item.body}</p>
+          <ol className="scoreboard">
+            {PROOF.map((row) => (
+              <li key={row.title} className="score-row">
+                <span className="score-rank">{row.rank}</span>
+                <h3 className="score-name">{row.title}</h3>
+                <span className="score-leader" aria-hidden="true" />
+                <span className="score-value">{row.value}</span>
               </li>
             ))}
-          </ul>
+          </ol>
         </FloorSection>
 
         <FloorSection {...floor("process")}>
           <p className="floor-eyebrow">How we work</p>
           <h2 id="process-title">Four gates, in order.</h2>
-          <ol className="gate-list">
-            {PROCESS.map((item) => (
-              <li key={item.step} className="gate">
-                <span className="gate-number" aria-hidden="true">
-                  {item.step}
+          <ol className="pipeline">
+            {PROCESS.map((stage, index) => (
+              <li key={stage.step} className="stage" style={{ "--i": index } as React.CSSProperties}>
+                <span className={`sprite sprite-${stage.sprite}`} aria-hidden="true" />
+                <span className="stage-number" aria-hidden="true">
+                  {stage.step}
                 </span>
-                <div className="gate-body">
-                  <h3>{item.title}</h3>
-                  <p>{item.body}</p>
-                </div>
+                <h3>{stage.title}</h3>
+                <p>{stage.body}</p>
               </li>
             ))}
           </ol>
@@ -188,9 +179,7 @@ export default function Home() {
             Tell us the idea you cannot stop thinking about. We will tell you honestly
             whether we are the right people to build it.
           </p>
-          <a className="contact-cta" href="mailto:hello@thelastclick.gr">
-            hello@thelastclick.gr
-          </a>
+          <ContactForm />
         </FloorSection>
       </main>
 

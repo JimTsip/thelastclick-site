@@ -75,8 +75,10 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* The brand gradient, pinned to the viewport so it does not repeat per floor. */
-body::before {
+/* The brand gradient is the no-WebGL background ONLY. With the scene, the
+   canvas owns the backdrop from its first frame and this never paints — so
+   the visitor never sees one look replaced by another. */
+body.no-webgl::before {
   position: fixed;
   z-index: 0;
   content: "";
@@ -150,18 +152,91 @@ body::before {
   pointer-events: none;
 }
 
+/* --- the boot screen -------------------------------------------------------- */
+
+.boot {
+  position: fixed;
+  z-index: 50;
+  display: grid;
+  inset: 0;
+  place-items: center;
+  background: var(--tlc-navy);
+  color: var(--tlc-white);
+}
+
+.boot-inner {
+  display: grid;
+  width: min(72vw, 420px);
+  gap: 18px;
+  justify-items: center;
+}
+
+.boot-logo {
+  width: clamp(150px, 16vw, 220px);
+  height: auto;
+  margin-bottom: 6px;
+}
+
+/* A pixel bar: 12 chunky segments revealed left to right in steps, never a
+   smooth sweep — this is a cabinet, not a browser. */
+.boot-bar {
+  position: relative;
+  width: 100%;
+  height: 18px;
+  border: 3px solid var(--tlc-lavender);
+  padding: 3px;
+  box-shadow: 4px 4px 0 var(--tlc-shadow-deep);
+}
+
+.boot-fill {
+  display: block;
+  width: 0;
+  height: 100%;
+  animation: boot-fill 2.2s steps(12, end) forwards;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--tlc-lavender) 0 calc(100% / 12 - 3px),
+    transparent calc(100% / 12 - 3px) calc(100% / 12)
+  );
+}
+
+@keyframes boot-fill {
+  to {
+    width: 100%;
+  }
+}
+
+.boot-caption {
+  color: var(--tlc-lavender);
+  font-family: var(--font-jersey), sans-serif;
+  font-size: 18px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+}
+
+.boot-blink {
+  animation: blink 0.9s steps(1, end) infinite;
+  color: var(--tlc-white);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .boot-fill {
+    animation-duration: 0.01s;
+  }
+}
+
 /* --- fallback starfield --------------------------------------------------- */
 
 .starfield {
   position: fixed;
   z-index: 0;
+  display: none;
   inset: 0;
   pointer-events: none;
 }
 
-/* Once the tower is rendering it owns the background. */
-body.scene-live .starfield {
-  display: none;
+body.no-webgl .starfield {
+  display: block;
 }
 
 /*
@@ -253,7 +328,6 @@ body.scene-text .floor-eyebrow {
 }
 
 .contact-link:focus-visible,
-.contact-cta:focus-visible,
 .brand:focus-visible {
   outline: 2px solid var(--tlc-white);
   outline-offset: 8px;
@@ -306,24 +380,41 @@ body.scene-text .floor-eyebrow {
   pointer-events: none;
 }
 
+/* Once the titles are IN the scene the scrim goes: it sits above the canvas
+   and would dim the type behind the shutters. Body copy carries its own
+   text-shadow, which is enough. */
+body.scene-text .floor::before {
+  display: none;
+}
+
 .floor-inner {
   width: 100%;
   max-width: 1320px;
   margin: 0 auto;
 }
 
+/* Side controls where the heading sits and which way the copy reads; the
+   horizontal layouts below need the full measure, so width is not constrained. */
 .floor[data-side="left"] .floor-inner {
-  max-width: min(var(--measure), 46%);
-  margin-left: 0;
-  --scrim-x: 26%;
+  --scrim-x: 30%;
 }
 
 .floor[data-side="right"] .floor-inner {
-  max-width: min(var(--measure), 46%);
-  margin-right: 0;
-  margin-left: auto;
-  --scrim-x: 74%;
+  --scrim-x: 70%;
+  text-align: right;
 }
+
+/* Right-aligned floors mirror the scoreboard so it hangs off the right edge:
+   value · leader · name · rank. Reorder with grid areas, not direction, so
+   text inside stays LTR. */
+.floor[data-side="right"] .score-row {
+  grid-template-columns: auto 1fr auto auto;
+}
+
+.floor[data-side="right"] .score-rank { order: 4; }
+.floor[data-side="right"] .score-name { order: 3; }
+.floor[data-side="right"] .score-leader { order: 2; }
+.floor[data-side="right"] .score-value { order: 1; text-align: left; }
 
 .floor[data-side="left"] { --scrim-x: 26%; }
 .floor[data-side="right"] { --scrim-x: 74%; }
@@ -444,57 +535,329 @@ h3 {
   text-transform: uppercase;
 }
 
-/* --- bare copy: no cards, no borders, words on the world ------------------ */
+/* --- pixel sprites: 8×8 icons drawn with box-shadow, no images ------------ */
 
-.panel-list,
-.gate-list {
-  display: grid;
-  margin-top: clamp(30px, 5svh, 56px);
-  gap: clamp(26px, 4svh, 44px);
+.sprite {
+  --px: clamp(7px, 0.75vw, 11px);
+  display: block;
+  width: var(--px);
+  height: var(--px);
+  margin-bottom: calc(var(--px) * 9);
+  background: transparent;
+  filter: drop-shadow(calc(var(--px) * 0.6) calc(var(--px) * 0.6) 0 var(--tlc-shadow-deep));
 }
 
-.panel-list p,
-.gate-list p {
+/* Each shadow is one lit cell: "x y 0 colour" with x,y in --px units. */
+.sprite-brain {
+  box-shadow:
+    calc(var(--px) * 2) 0 0 #a77cff, calc(var(--px) * 3) 0 0 #a77cff, calc(var(--px) * 4) 0 0 #a77cff, calc(var(--px) * 5) 0 0 #a77cff,
+    calc(var(--px) * 1) calc(var(--px) * 1) 0 #a77cff, calc(var(--px) * 3) calc(var(--px) * 1) 0 #ffffff, calc(var(--px) * 5) calc(var(--px) * 1) 0 #ffffff, calc(var(--px) * 6) calc(var(--px) * 1) 0 #a77cff,
+    0 calc(var(--px) * 2) 0 #a77cff, calc(var(--px) * 2) calc(var(--px) * 2) 0 #ffffff, calc(var(--px) * 4) calc(var(--px) * 2) 0 #ffffff, calc(var(--px) * 7) calc(var(--px) * 2) 0 #a77cff,
+    0 calc(var(--px) * 3) 0 #a77cff, calc(var(--px) * 1) calc(var(--px) * 3) 0 #ffffff, calc(var(--px) * 3) calc(var(--px) * 3) 0 #ffffff, calc(var(--px) * 5) calc(var(--px) * 3) 0 #ffffff, calc(var(--px) * 7) calc(var(--px) * 3) 0 #a77cff,
+    0 calc(var(--px) * 4) 0 #a77cff, calc(var(--px) * 2) calc(var(--px) * 4) 0 #ffffff, calc(var(--px) * 4) calc(var(--px) * 4) 0 #ffffff, calc(var(--px) * 6) calc(var(--px) * 4) 0 #ffffff, calc(var(--px) * 7) calc(var(--px) * 4) 0 #a77cff,
+    calc(var(--px) * 1) calc(var(--px) * 5) 0 #a77cff, calc(var(--px) * 3) calc(var(--px) * 5) 0 #ffffff, calc(var(--px) * 5) calc(var(--px) * 5) 0 #ffffff, calc(var(--px) * 6) calc(var(--px) * 5) 0 #a77cff,
+    calc(var(--px) * 2) calc(var(--px) * 6) 0 #a77cff, calc(var(--px) * 3) calc(var(--px) * 6) 0 #a77cff, calc(var(--px) * 4) calc(var(--px) * 6) 0 #a77cff, calc(var(--px) * 5) calc(var(--px) * 6) 0 #a77cff,
+    calc(var(--px) * 3) calc(var(--px) * 7) 0 #7b43ff, calc(var(--px) * 4) calc(var(--px) * 7) 0 #7b43ff;
+}
+
+.sprite-phone {
+  box-shadow:
+    calc(var(--px) * 2) 0 0 #a77cff, calc(var(--px) * 3) 0 0 #a77cff, calc(var(--px) * 4) 0 0 #a77cff, calc(var(--px) * 5) 0 0 #a77cff,
+    calc(var(--px) * 2) calc(var(--px) * 1) 0 #a77cff, calc(var(--px) * 3) calc(var(--px) * 1) 0 #ffffff, calc(var(--px) * 4) calc(var(--px) * 1) 0 #ffffff, calc(var(--px) * 5) calc(var(--px) * 1) 0 #a77cff,
+    calc(var(--px) * 2) calc(var(--px) * 2) 0 #a77cff, calc(var(--px) * 3) calc(var(--px) * 2) 0 #4b13d1, calc(var(--px) * 4) calc(var(--px) * 2) 0 #4b13d1, calc(var(--px) * 5) calc(var(--px) * 2) 0 #a77cff,
+    calc(var(--px) * 2) calc(var(--px) * 3) 0 #a77cff, calc(var(--px) * 3) calc(var(--px) * 3) 0 #4b13d1, calc(var(--px) * 4) calc(var(--px) * 3) 0 #4b13d1, calc(var(--px) * 5) calc(var(--px) * 3) 0 #a77cff,
+    calc(var(--px) * 2) calc(var(--px) * 4) 0 #a77cff, calc(var(--px) * 3) calc(var(--px) * 4) 0 #4b13d1, calc(var(--px) * 4) calc(var(--px) * 4) 0 #4b13d1, calc(var(--px) * 5) calc(var(--px) * 4) 0 #a77cff,
+    calc(var(--px) * 2) calc(var(--px) * 5) 0 #a77cff, calc(var(--px) * 3) calc(var(--px) * 5) 0 #4b13d1, calc(var(--px) * 4) calc(var(--px) * 5) 0 #4b13d1, calc(var(--px) * 5) calc(var(--px) * 5) 0 #a77cff,
+    calc(var(--px) * 2) calc(var(--px) * 6) 0 #a77cff, calc(var(--px) * 3) calc(var(--px) * 6) 0 #ffffff, calc(var(--px) * 4) calc(var(--px) * 6) 0 #ffffff, calc(var(--px) * 5) calc(var(--px) * 6) 0 #a77cff,
+    calc(var(--px) * 2) calc(var(--px) * 7) 0 #a77cff, calc(var(--px) * 3) calc(var(--px) * 7) 0 #a77cff, calc(var(--px) * 4) calc(var(--px) * 7) 0 #a77cff, calc(var(--px) * 5) calc(var(--px) * 7) 0 #a77cff;
+}
+
+.sprite-grid {
+  box-shadow:
+    0 0 0 #a77cff, calc(var(--px) * 1) 0 0 #a77cff, calc(var(--px) * 2) 0 0 #a77cff, calc(var(--px) * 4) 0 0 #a77cff, calc(var(--px) * 5) 0 0 #a77cff, calc(var(--px) * 6) 0 0 #a77cff, calc(var(--px) * 7) 0 0 #a77cff,
+    0 calc(var(--px) * 1) 0 #a77cff, calc(var(--px) * 1) calc(var(--px) * 1) 0 #ffffff, calc(var(--px) * 2) calc(var(--px) * 1) 0 #a77cff, calc(var(--px) * 4) calc(var(--px) * 1) 0 #a77cff, calc(var(--px) * 5) calc(var(--px) * 1) 0 #4b13d1, calc(var(--px) * 6) calc(var(--px) * 1) 0 #4b13d1, calc(var(--px) * 7) calc(var(--px) * 1) 0 #a77cff,
+    0 calc(var(--px) * 2) 0 #a77cff, calc(var(--px) * 1) calc(var(--px) * 2) 0 #a77cff, calc(var(--px) * 2) calc(var(--px) * 2) 0 #a77cff, calc(var(--px) * 4) calc(var(--px) * 2) 0 #a77cff, calc(var(--px) * 5) calc(var(--px) * 2) 0 #a77cff, calc(var(--px) * 6) calc(var(--px) * 2) 0 #a77cff, calc(var(--px) * 7) calc(var(--px) * 2) 0 #a77cff,
+    0 calc(var(--px) * 4) 0 #a77cff, calc(var(--px) * 1) calc(var(--px) * 4) 0 #a77cff, calc(var(--px) * 2) calc(var(--px) * 4) 0 #a77cff, calc(var(--px) * 3) calc(var(--px) * 4) 0 #a77cff, calc(var(--px) * 5) calc(var(--px) * 4) 0 #a77cff, calc(var(--px) * 6) calc(var(--px) * 4) 0 #a77cff, calc(var(--px) * 7) calc(var(--px) * 4) 0 #a77cff,
+    0 calc(var(--px) * 5) 0 #a77cff, calc(var(--px) * 1) calc(var(--px) * 5) 0 #4b13d1, calc(var(--px) * 2) calc(var(--px) * 5) 0 #4b13d1, calc(var(--px) * 3) calc(var(--px) * 5) 0 #a77cff, calc(var(--px) * 5) calc(var(--px) * 5) 0 #a77cff, calc(var(--px) * 6) calc(var(--px) * 5) 0 #ffffff, calc(var(--px) * 7) calc(var(--px) * 5) 0 #a77cff,
+    0 calc(var(--px) * 6) 0 #a77cff, calc(var(--px) * 1) calc(var(--px) * 6) 0 #a77cff, calc(var(--px) * 2) calc(var(--px) * 6) 0 #a77cff, calc(var(--px) * 3) calc(var(--px) * 6) 0 #a77cff, calc(var(--px) * 5) calc(var(--px) * 6) 0 #a77cff, calc(var(--px) * 6) calc(var(--px) * 6) 0 #a77cff, calc(var(--px) * 7) calc(var(--px) * 6) 0 #a77cff;
+}
+
+.sprite-target {
+  box-shadow:
+    calc(var(--px) * 2) 0 0 #a77cff,
+    calc(var(--px) * 3) 0 0 #a77cff,
+    calc(var(--px) * 4) 0 0 #a77cff,
+    calc(var(--px) * 5) 0 0 #a77cff,
+    calc(var(--px) * 1) calc(var(--px) * 1) 0 #a77cff,
+    calc(var(--px) * 6) calc(var(--px) * 1) 0 #a77cff,
+    0 calc(var(--px) * 2) 0 #a77cff,
+    calc(var(--px) * 3) calc(var(--px) * 2) 0 #a77cff,
+    calc(var(--px) * 4) calc(var(--px) * 2) 0 #a77cff,
+    calc(var(--px) * 7) calc(var(--px) * 2) 0 #a77cff,
+    0 calc(var(--px) * 3) 0 #a77cff,
+    calc(var(--px) * 2) calc(var(--px) * 3) 0 #a77cff,
+    calc(var(--px) * 5) calc(var(--px) * 3) 0 #a77cff,
+    calc(var(--px) * 7) calc(var(--px) * 3) 0 #a77cff,
+    0 calc(var(--px) * 4) 0 #a77cff,
+    calc(var(--px) * 2) calc(var(--px) * 4) 0 #a77cff,
+    calc(var(--px) * 5) calc(var(--px) * 4) 0 #a77cff,
+    calc(var(--px) * 7) calc(var(--px) * 4) 0 #a77cff,
+    0 calc(var(--px) * 5) 0 #a77cff,
+    calc(var(--px) * 3) calc(var(--px) * 5) 0 #a77cff,
+    calc(var(--px) * 4) calc(var(--px) * 5) 0 #a77cff,
+    calc(var(--px) * 7) calc(var(--px) * 5) 0 #a77cff,
+    calc(var(--px) * 1) calc(var(--px) * 6) 0 #a77cff,
+    calc(var(--px) * 6) calc(var(--px) * 6) 0 #a77cff,
+    calc(var(--px) * 2) calc(var(--px) * 7) 0 #a77cff,
+    calc(var(--px) * 3) calc(var(--px) * 7) 0 #a77cff,
+    calc(var(--px) * 4) calc(var(--px) * 7) 0 #a77cff,
+    calc(var(--px) * 5) calc(var(--px) * 7) 0 #a77cff;
+}
+
+.sprite-pencil {
+  box-shadow:
+    calc(var(--px) * 6) 0 0 #a77cff,
+    calc(var(--px) * 7) 0 0 #a77cff,
+    calc(var(--px) * 5) calc(var(--px) * 1) 0 #a77cff,
+    calc(var(--px) * 6) calc(var(--px) * 1) 0 #ffffff,
+    calc(var(--px) * 7) calc(var(--px) * 1) 0 #a77cff,
+    calc(var(--px) * 4) calc(var(--px) * 2) 0 #a77cff,
+    calc(var(--px) * 5) calc(var(--px) * 2) 0 #ffffff,
+    calc(var(--px) * 6) calc(var(--px) * 2) 0 #a77cff,
+    calc(var(--px) * 3) calc(var(--px) * 3) 0 #a77cff,
+    calc(var(--px) * 4) calc(var(--px) * 3) 0 #ffffff,
+    calc(var(--px) * 5) calc(var(--px) * 3) 0 #a77cff,
+    calc(var(--px) * 2) calc(var(--px) * 4) 0 #a77cff,
+    calc(var(--px) * 3) calc(var(--px) * 4) 0 #ffffff,
+    calc(var(--px) * 4) calc(var(--px) * 4) 0 #a77cff,
+    calc(var(--px) * 1) calc(var(--px) * 5) 0 #a77cff,
+    calc(var(--px) * 2) calc(var(--px) * 5) 0 #ffffff,
+    calc(var(--px) * 3) calc(var(--px) * 5) 0 #a77cff,
+    0 calc(var(--px) * 6) 0 #a77cff,
+    calc(var(--px) * 1) calc(var(--px) * 6) 0 #a77cff,
+    0 calc(var(--px) * 7) 0 #a77cff;
+}
+
+.sprite-hammer {
+  box-shadow:
+    calc(var(--px) * 2) 0 0 #a77cff,
+    calc(var(--px) * 3) 0 0 #a77cff,
+    calc(var(--px) * 4) 0 0 #a77cff,
+    calc(var(--px) * 5) 0 0 #a77cff,
+    calc(var(--px) * 6) 0 0 #a77cff,
+    calc(var(--px) * 1) calc(var(--px) * 1) 0 #a77cff,
+    calc(var(--px) * 2) calc(var(--px) * 1) 0 #ffffff,
+    calc(var(--px) * 3) calc(var(--px) * 1) 0 #ffffff,
+    calc(var(--px) * 4) calc(var(--px) * 1) 0 #ffffff,
+    calc(var(--px) * 5) calc(var(--px) * 1) 0 #ffffff,
+    calc(var(--px) * 6) calc(var(--px) * 1) 0 #ffffff,
+    calc(var(--px) * 7) calc(var(--px) * 1) 0 #a77cff,
+    calc(var(--px) * 1) calc(var(--px) * 2) 0 #a77cff,
+    calc(var(--px) * 2) calc(var(--px) * 2) 0 #ffffff,
+    calc(var(--px) * 3) calc(var(--px) * 2) 0 #ffffff,
+    calc(var(--px) * 4) calc(var(--px) * 2) 0 #ffffff,
+    calc(var(--px) * 5) calc(var(--px) * 2) 0 #ffffff,
+    calc(var(--px) * 6) calc(var(--px) * 2) 0 #ffffff,
+    calc(var(--px) * 7) calc(var(--px) * 2) 0 #a77cff,
+    calc(var(--px) * 2) calc(var(--px) * 3) 0 #a77cff,
+    calc(var(--px) * 3) calc(var(--px) * 3) 0 #a77cff,
+    calc(var(--px) * 4) calc(var(--px) * 3) 0 #a77cff,
+    calc(var(--px) * 5) calc(var(--px) * 3) 0 #a77cff,
+    calc(var(--px) * 6) calc(var(--px) * 3) 0 #a77cff,
+    calc(var(--px) * 4) calc(var(--px) * 4) 0 #a77cff,
+    calc(var(--px) * 4) calc(var(--px) * 5) 0 #a77cff,
+    calc(var(--px) * 4) calc(var(--px) * 6) 0 #a77cff,
+    calc(var(--px) * 4) calc(var(--px) * 7) 0 #a77cff;
+}
+
+.sprite-rocket {
+  box-shadow:
+    calc(var(--px) * 3) 0 0 #a77cff,
+    calc(var(--px) * 4) 0 0 #a77cff,
+    calc(var(--px) * 2) calc(var(--px) * 1) 0 #a77cff,
+    calc(var(--px) * 3) calc(var(--px) * 1) 0 #ffffff,
+    calc(var(--px) * 4) calc(var(--px) * 1) 0 #ffffff,
+    calc(var(--px) * 5) calc(var(--px) * 1) 0 #a77cff,
+    calc(var(--px) * 2) calc(var(--px) * 2) 0 #a77cff,
+    calc(var(--px) * 3) calc(var(--px) * 2) 0 #ffffff,
+    calc(var(--px) * 4) calc(var(--px) * 2) 0 #ffffff,
+    calc(var(--px) * 5) calc(var(--px) * 2) 0 #a77cff,
+    calc(var(--px) * 1) calc(var(--px) * 3) 0 #a77cff,
+    calc(var(--px) * 2) calc(var(--px) * 3) 0 #ffffff,
+    calc(var(--px) * 3) calc(var(--px) * 3) 0 #a77cff,
+    calc(var(--px) * 4) calc(var(--px) * 3) 0 #a77cff,
+    calc(var(--px) * 5) calc(var(--px) * 3) 0 #ffffff,
+    calc(var(--px) * 6) calc(var(--px) * 3) 0 #a77cff,
+    calc(var(--px) * 1) calc(var(--px) * 4) 0 #a77cff,
+    calc(var(--px) * 2) calc(var(--px) * 4) 0 #ffffff,
+    calc(var(--px) * 3) calc(var(--px) * 4) 0 #a77cff,
+    calc(var(--px) * 4) calc(var(--px) * 4) 0 #a77cff,
+    calc(var(--px) * 5) calc(var(--px) * 4) 0 #ffffff,
+    calc(var(--px) * 6) calc(var(--px) * 4) 0 #a77cff,
+    0 calc(var(--px) * 5) 0 #a77cff,
+    calc(var(--px) * 1) calc(var(--px) * 5) 0 #ffffff,
+    calc(var(--px) * 2) calc(var(--px) * 5) 0 #a77cff,
+    calc(var(--px) * 5) calc(var(--px) * 5) 0 #a77cff,
+    calc(var(--px) * 6) calc(var(--px) * 5) 0 #ffffff,
+    calc(var(--px) * 7) calc(var(--px) * 5) 0 #a77cff,
+    0 calc(var(--px) * 6) 0 #a77cff,
+    calc(var(--px) * 7) calc(var(--px) * 6) 0 #a77cff,
+    calc(var(--px) * 1) calc(var(--px) * 7) 0 #a77cff,
+    calc(var(--px) * 6) calc(var(--px) * 7) 0 #a77cff;
+}
+
+/* --- SERVICES: the roster — three classes, side by side --------------------- */
+
+.roster {
+  display: grid;
+  margin-top: clamp(30px, 5svh, 56px);
+  gap: clamp(20px, 2.6vw, 44px);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.roster-card {
+  position: relative;
+  padding-top: 6px;
+  transition: transform 220ms ease;
+}
+
+.roster-card:hover {
+  transform: translateY(-4px);
+}
+
+.roster-index {
+  position: absolute;
+  top: 0;
+  right: 0;
+  color: var(--tlc-lavender);
+  font-family: var(--font-jersey), sans-serif;
+  font-size: clamp(22px, 2vw, 32px);
+  line-height: 1;
+  opacity: 0.6;
+}
+
+.roster-card h3 {
+  font-size: clamp(22px, 1.9vw, 30px);
+}
+
+.roster-card p {
   margin-top: 10px;
-  max-width: var(--measure);
   color: var(--tlc-body);
-  font-size: clamp(15px, 1.12vw, 18px);
-  font-weight: 500;
-  line-height: 1.55;
+  font-size: clamp(14px, 1.02vw, 16px);
+  line-height: 1.5;
   text-shadow: 0 2px 0 #08063a, 0 0 18px #08063acc;
 }
 
-.panel {
-  position: relative;
-  padding-left: clamp(22px, 2.2vw, 34px);
-}
-
-/* A pixel bullet standing in for the number, so the list still scans. */
-.panel-tag {
-  position: absolute;
-  top: 2px;
-  left: 0;
+/* The class's "stat line" — a tiny tracked-out pixel readout at the foot. */
+.roster-stat {
+  display: inline-block;
+  margin-top: 14px;
+  border-top: 2px solid var(--tlc-violet);
+  padding-top: 8px;
   color: var(--tlc-lavender);
   font-family: var(--font-jersey), sans-serif;
-  font-size: clamp(18px, 1.5vw, 24px);
-  letter-spacing: 1px;
+  font-size: clamp(14px, 1.15vw, 18px);
+  letter-spacing: 3px;
+}
+
+/* --- PROOF: the scoreboard — rank · name · leader · fact -------------------- */
+
+.scoreboard {
+  display: grid;
+  margin-top: clamp(30px, 5svh, 56px);
+  gap: clamp(14px, 2.4svh, 24px);
+}
+
+.score-row {
+  display: grid;
+  align-items: baseline;
+  gap: clamp(12px, 1.4vw, 22px);
+  grid-template-columns: auto auto 1fr auto;
+}
+
+.score-rank {
+  color: var(--tlc-lavender);
+  font-family: var(--font-jersey), sans-serif;
+  font-size: clamp(26px, 2.6vw, 42px);
   line-height: 1;
-  text-shadow: 2px 2px 0 var(--tlc-shadow-deep);
+  text-shadow: 3px 3px 0 var(--tlc-shadow-deep);
 }
 
-.gate {
-  display: flex;
-  align-items: flex-start;
-  gap: clamp(16px, 1.8vw, 28px);
+.score-name {
+  white-space: nowrap;
+  font-size: clamp(22px, 2vw, 32px);
 }
 
-.gate-number {
-  flex: 0 0 auto;
+/* Dotted leader, arcade high-score style. */
+.score-leader {
+  height: 4px;
+  background-image: radial-gradient(circle, var(--tlc-lavender) 1.4px, transparent 1.6px);
+  background-size: 10px 4px;
+  opacity: 0.55;
+  transform: translateY(-4px);
+}
+
+.score-value {
+  color: var(--tlc-white);
+  font-family: var(--font-jersey), sans-serif;
+  font-size: clamp(18px, 1.55vw, 26px);
+  letter-spacing: 1.5px;
+  line-height: 1;
+  text-align: right;
+  text-shadow: 3px 3px 0 var(--tlc-shadow-deep);
+  white-space: nowrap;
+}
+
+/* --- PROCESS: the pipeline — four stages on one line, arrows between ------- */
+
+.pipeline {
+  display: grid;
+  margin-top: clamp(30px, 5svh, 56px);
+  gap: clamp(10px, 1.4vw, 24px);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.stage {
+  position: relative;
+  padding-top: clamp(18px, 2.2svh, 30px);
+}
+
+.stage .sprite {
+  margin-bottom: calc(var(--px) * 9.5);
+}
+
+/* Arrowheads between stages carry the sequence; no rail. */
+.stage:not(:last-child)::after {
+  position: absolute;
+  top: clamp(26px, 3svh, 40px);
+  right: calc(-1 * clamp(10px, 1.4vw, 24px) + 4px);
+  color: var(--tlc-lavender);
+  content: "▸";
+  font-size: 22px;
+  line-height: 1;
+  opacity: 0.7;
+}
+
+.stage-number {
+  display: block;
   color: var(--tlc-lavender);
   font-family: var(--font-jersey), sans-serif;
-  font-size: clamp(44px, 4.6vw, 72px);
-  line-height: 0.8;
+  font-size: clamp(38px, 4.2vw, 68px);
+  line-height: 0.85;
   text-shadow: 5px 6px 0 var(--tlc-shadow-deep);
+}
+
+.stage h3 {
+  margin-top: 8px;
+  font-size: clamp(22px, 2vw, 32px);
+}
+
+.stage p {
+  margin-top: 8px;
+  color: var(--tlc-body);
+  font-size: clamp(13px, 0.98vw, 16px);
+  line-height: 1.5;
+  text-shadow: 0 2px 0 #08063a, 0 0 18px #08063acc;
 }
 
 /* --- the depth gauge ------------------------------------------------------ */
@@ -572,7 +935,7 @@ h3 {
   writing-mode: vertical-rl;
 }
 
-/* --- contact -------------------------------------------------------------- */
+/* --- CONTACT: the console --------------------------------------------------- */
 
 .floor[data-floor="contact"] .floor-inner {
   display: flex;
@@ -587,30 +950,144 @@ h3 {
   color: var(--tlc-body);
   font-size: clamp(16px, 1.3vw, 20px);
   line-height: 1.5;
+  text-shadow: 0 2px 0 #08063a, 0 0 18px #08063acc;
 }
 
-.contact-cta {
+.console {
+  display: grid;
+  width: min(100%, 720px);
   margin-top: clamp(28px, 5svh, 52px);
-  border: 3px solid var(--tlc-lavender);
-  padding: clamp(14px, 1.6svh, 20px) clamp(22px, 2.6vw, 40px);
+  gap: clamp(14px, 2svh, 22px);
+  grid-template-columns: 1fr 1fr;
+  text-align: left;
+}
+
+.console-line {
+  color: var(--tlc-lavender);
+  font-family: var(--font-jersey), sans-serif;
+  font-size: clamp(18px, 1.5vw, 24px);
+  grid-column: 1 / -1;
+  letter-spacing: 2px;
+}
+
+.console-prompt {
   color: var(--tlc-white);
-  font-size: clamp(16px, 1.5vw, 24px);
-  font-weight: 800;
-  letter-spacing: 1px;
-  text-decoration: none;
+}
+
+.console-field {
+  display: grid;
+  gap: 8px;
+}
+
+.console-field--wide {
+  grid-column: 1 / -1;
+}
+
+.console-label {
+  color: var(--tlc-lavender);
+  font-family: var(--font-jersey), sans-serif;
+  font-size: clamp(15px, 1.2vw, 19px);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+}
+
+.console input,
+.console textarea {
+  width: 100%;
+  border: 0;
+  border-bottom: 3px solid var(--tlc-violet);
+  background: #08063a80;
+  padding: 12px 14px;
+  color: var(--tlc-white);
+  /* 16px or larger, otherwise iOS zooms the page on focus. */
+  font: 500 16px/1.4 var(--font-geist), system-ui, sans-serif;
+  outline: none;
+  transition: border-color 160ms ease, background-color 160ms ease;
+}
+
+.console textarea {
+  resize: vertical;
+  min-height: 120px;
+}
+
+.console input:focus-visible,
+.console textarea:focus-visible {
+  border-bottom-color: var(--tlc-lavender);
+  background: #0e0a4a99;
+}
+
+.console-honey {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.console-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 18px;
+  grid-column: 1 / -1;
+}
+
+.console-submit {
+  border: 3px solid var(--tlc-lavender);
+  background: transparent;
+  padding: 12px 24px;
+  color: var(--tlc-white);
+  cursor: pointer;
+  font-family: var(--font-jersey), sans-serif;
+  font-size: clamp(20px, 1.7vw, 28px);
+  letter-spacing: 2px;
   transition: background-color 160ms ease, color 160ms ease, transform 160ms ease;
 }
 
-.contact-cta:hover,
-.contact-cta:focus-visible {
+.console-submit:hover,
+.console-submit:focus-visible {
   background: var(--tlc-lavender);
   color: var(--tlc-navy);
   transform: translateY(-2px);
 }
 
+.console-submit:disabled {
+  cursor: progress;
+  opacity: 0.6;
+}
+
+.console-status {
+  color: var(--tlc-body);
+  font-size: 15px;
+  min-height: 1.4em;
+}
+
 /* --- responsive ----------------------------------------------------------- */
 
 @media (max-width: 900px) {
+  .roster,
+  .pipeline {
+    grid-template-columns: 1fr;
+  }
+
+  .stage::before,
+  .stage:not(:last-child)::after {
+    display: none;
+  }
+
+  .score-row {
+    grid-template-columns: auto 1fr;
+  }
+
+  .score-leader,
+  .score-value {
+    display: none;
+  }
+
+  .console {
+    grid-template-columns: 1fr;
+  }
+
   .floor[data-side="left"] .floor-inner,
   .floor[data-side="right"] .floor-inner {
     max-width: none;
