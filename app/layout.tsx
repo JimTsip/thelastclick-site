@@ -25,11 +25,8 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://thelastclick.gr"),
   title: "The Last Click — AI First. Bold Ideas.",
   description: "We turn ambitious ideas into AI-powered products that actually work.",
-  icons: {
-    icon: "/TLC-logo.png",
-    shortcut: "/TLC-logo.png",
-    apple: "/TLC-logo.png",
-  },
+  // Icons and the OG image come from the app/ file conventions:
+  // favicon.ico, icon.png, apple-icon.png, opengraph-image.png.
   openGraph: {
     title: "The Last Click",
     description: "AI First. Bold Ideas. One Last Click.",
@@ -37,13 +34,18 @@ export const metadata: Metadata = {
     siteName: "The Last Click",
     type: "website",
   },
+  twitter: {
+    card: "summary_large_image",
+    title: "The Last Click",
+    description: "AI First. Bold Ideas. One Last Click.",
+  },
 };
 
 const organizationSchema = {
   "@context": "https://schema.org",
   "@type": "Organization",
   name: "The Last Click",
-  legalName: "THE LAST CLICK EE",
+  legalName: "THE LAST CLICK L.P.",
   url: "https://thelastclick.gr",
   logo: "https://thelastclick.gr/TLC-logo.png",
   description: "We turn ambitious ideas into AI-powered products that actually work.",
