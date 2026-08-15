@@ -3,21 +3,61 @@ import { access, readFile } from "node:fs/promises";
 import test from "node:test";
 
 const projectRoot = new URL("../", import.meta.url);
+const html = () => readFile(new URL("out/index.html", projectRoot), "utf8");
 
 test("exports the The Last Click landing page", async () => {
-  const html = await readFile(new URL("out/index.html", projectRoot), "utf8");
+  const page = await html();
 
-  assert.match(html, /<title>The Last Click — AI First\. Bold Ideas\.<\/title>/i);
-  assert.match(html, /AI First\./i);
-  assert.match(html, /Bold Ideas\./i);
-  assert.match(html, /One Last Click\./i);
-  assert.match(html, /We turn ambitious ideas into AI-powered products that actually work\./i);
-  assert.match(html, /mailto:hello@thelastclick\.gr/i);
-  assert.match(html, /The Last Click © 2026/i);
+  assert.match(page, /<title>The Last Click — AI First\. Bold Ideas\.<\/title>/i);
+  assert.match(page, /AI First\./i);
+  assert.match(page, /Bold Ideas\./i);
+  assert.match(page, /One Last Click\./i);
+  assert.match(page, /We turn ambitious ideas into AI-powered products that actually work\./i);
+  assert.match(page, /mailto:hello@thelastclick\.gr/i);
+  assert.match(page, /The Last Click © 2026/i);
+});
+
+test("every floor's copy is in the static HTML, not injected by JS", async () => {
+  const page = await html();
+
+  // One headline per floor. If these ever stop being server-rendered, the page
+  // has silently become JS-dependent and both SEO and the no-WebGL path break.
+  assert.match(page, /Three things, done properly\./i);
+  assert.match(page, /Shipped, not shelved\./i);
+  assert.match(page, /Four gates, in order\./i);
+  assert.match(page, /build what should exist next\./i);
+
+  // A sample of body copy from each list, for the same reason.
+  assert.match(page, /AI-first products/i);
+  assert.match(page, /Mobile apps &amp; games|Mobile apps & games/i);
+  assert.match(page, /Web apps &amp; design systems|Web apps & design systems/i);
+  assert.match(page, /iOS and Android/i);
+  assert.match(page, /Frame/);
+  assert.match(page, /Ship in weeks, not quarters/i);
+});
+
+test("keeps the accessibility affordances the scene depends on", async () => {
+  const page = await html();
+
+  assert.match(page, /class="skip-link"/, "skip link is missing");
+  assert.match(page, /aria-labelledby="hero-title"/, "hero section is not labelled");
+  assert.match(page, /aria-hidden="true"/, "decorative pixels are not hidden from AT");
 });
 
 test("exports domain and brand assets", async () => {
   const cname = await readFile(new URL("out/CNAME", projectRoot), "utf8");
   assert.equal(cname.trim(), "thelastclick.gr");
   await access(new URL("out/TLC-logo.png", projectRoot));
+  await access(new URL("out/opengraph-image.png", projectRoot));
+});
+
+test("does not put three.js on the critical path", async () => {
+  const page = await html();
+
+  // The 3D scene must stay in a lazily-imported chunk. A preload or a module
+  // script referencing three in the document head means the code split broke.
+  const preloads = page.match(/<link[^>]+rel="preload"[^>]*>/g) ?? [];
+  for (const tag of preloads) {
+    assert.doesNotMatch(tag, /three/i, `three.js is preloaded: ${tag}`);
+  }
 });

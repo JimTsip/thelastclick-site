@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Jersey_10 } from "next/font/google";
+import { Geist, Jersey_10 } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 
@@ -7,11 +7,6 @@ const GA_MEASUREMENT_ID = "G-TD0G3Z1MQ7";
 
 const geist = Geist({
   variable: "--font-geist",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
   subsets: ["latin"],
 });
 
@@ -71,7 +66,7 @@ const websiteSchema = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
-      <body className={`${geist.variable} ${geistMono.variable} ${jersey.variable}`}>
+      <body className={`${geist.variable} ${jersey.variable}`}>
         {children}
         <script
           type="application/ld+json"
