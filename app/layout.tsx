@@ -18,49 +18,125 @@ const jersey = Jersey_10({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://thelastclick.gr"),
-  title: "The Last Click — AI First. Bold Ideas.",
-  description: "We turn ambitious ideas into AI-powered products that actually work.",
+  // The title is the one ranking signal we fully control. It has to say what
+  // the studio does and where — nobody searches for a slogan.
+  title: "The Last Click — AI-first product studio in Athens · AI products, apps, games & design systems",
+  description:
+    "The Last Click is an AI-first product studio in Athens. Bring us the work and we turn it into a live AI experience: AI products and agents, mobile apps and games, web apps and design systems — from brief to live.",
+  keywords: [
+    "AI product studio",
+    "AI-first products",
+    "AI agents",
+    "AI voice agent",
+    "mobile app development Athens",
+    "game development Greece",
+    "design system",
+    "web app development",
+    "The Last Click",
+  ],
+  alternates: { canonical: "https://thelastclick.gr/" },
+  robots: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1 },
   // Icons and the OG image come from the app/ file conventions:
   // favicon.ico, icon.png, apple-icon.png, opengraph-image.png.
   openGraph: {
-    title: "The Last Click",
-    description: "AI First. Bold Ideas. One Last Click.",
-    url: "https://thelastclick.gr",
+    title: "The Last Click — AI-first product studio in Athens",
+    description:
+      "Bring us the work; we turn it into a live AI experience. AI products, apps, games and design systems — from brief to live.",
+    url: "https://thelastclick.gr/",
     siteName: "The Last Click",
     type: "website",
+    locale: "en_US",
   },
   twitter: {
     card: "summary_large_image",
-    title: "The Last Click",
-    description: "AI First. Bold Ideas. One Last Click.",
+    title: "The Last Click — AI-first product studio in Athens",
+    description:
+      "Bring us the work; we turn it into a live AI experience. AI products, apps, games and design systems — from brief to live.",
   },
 };
 
 const organizationSchema = {
   "@context": "https://schema.org",
-  "@type": "Organization",
+  "@type": ["Organization", "ProfessionalService"],
+  "@id": "https://thelastclick.gr/#org",
   name: "The Last Click",
   legalName: "THE LAST CLICK L.P.",
-  url: "https://thelastclick.gr",
+  url: "https://thelastclick.gr/",
   logo: "https://thelastclick.gr/TLC-logo.png",
-  description: "We turn ambitious ideas into AI-powered products that actually work.",
+  image: "https://thelastclick.gr/opengraph-image.png",
+  description:
+    "AI-first product studio in Athens. We turn briefs into live AI experiences: AI products and agents, mobile apps and games, web apps and design systems.",
   email: "hello@thelastclick.gr",
+  foundingDate: "2026",
   founder: { "@type": "Person", name: "Jim Tsipoutas", url: "https://jimtsipoutas.com" },
-  address: { "@type": "PostalAddress", addressCountry: "GR" },
+  address: {
+    "@type": "PostalAddress",
+    streetAddress: "59-61 Agiou Konstantinou",
+    addressLocality: "Maroussi",
+    addressRegion: "Attiki",
+    postalCode: "15124",
+    addressCountry: "GR",
+  },
+  areaServed: [{ "@type": "Country", name: "Greece" }, { "@type": "Place", name: "Europe" }, "Worldwide"],
+  knowsAbout: [
+    "artificial intelligence",
+    "AI agents",
+    "voice assistants",
+    "mobile app development",
+    "game development",
+    "design systems",
+    "product design",
+  ],
+  hasOfferCatalog: {
+    "@type": "OfferCatalog",
+    name: "What we build",
+    itemListElement: [
+      {
+        "@type": "Offer",
+        itemOffered: {
+          "@type": "Service",
+          name: "AI-first products and agents",
+          description:
+            "Voice agents, assistants, automations and the interfaces that make them feel inevitable — model, plumbing and judgment.",
+        },
+      },
+      {
+        "@type": "Offer",
+        itemOffered: {
+          "@type": "Service",
+          name: "Mobile apps and games",
+          description: "Native apps and games, from the first sketch to a passed review.",
+        },
+      },
+      {
+        "@type": "Offer",
+        itemOffered: {
+          "@type": "Service",
+          name: "Web apps and design systems",
+          description:
+            "Interfaces that stay coherent as they grow, and the system underneath that keeps them that way.",
+        },
+      },
+    ],
+  },
   sameAs: [
+    "https://www.linkedin.com/company/thelastclick",
     "https://padlboard.ai",
     "https://boomboats.com",
     "https://cookonomics.com",
     "https://flexui.ai",
+    "https://jimtsipoutas.com",
   ],
 };
 
 const websiteSchema = {
   "@context": "https://schema.org",
   "@type": "WebSite",
+  "@id": "https://thelastclick.gr/#website",
   name: "The Last Click",
-  url: "https://thelastclick.gr",
-  publisher: { "@type": "Organization", name: "The Last Click" },
+  url: "https://thelastclick.gr/",
+  inLanguage: "en",
+  publisher: { "@id": "https://thelastclick.gr/#org" },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

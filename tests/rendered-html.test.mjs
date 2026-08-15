@@ -8,7 +8,10 @@ const html = () => readFile(new URL("out/index.html", projectRoot), "utf8");
 test("exports the The Last Click landing page", async () => {
   const page = await html();
 
-  assert.match(page, /<title>The Last Click — AI First\. Bold Ideas\.<\/title>/i);
+  assert.match(page, /<title>The Last Click — AI-first product studio in Athens/i);
+  assert.match(page, /<link rel="canonical" href="https:\/\/thelastclick\.gr\/"/, "canonical is missing");
+  assert.match(page, /"@type":\["Organization","ProfessionalService"\]/, "Organization JSON-LD is missing");
+  assert.match(page, /"streetAddress":"59-61 Agiou Konstantinou"/, "address JSON-LD is missing");
   assert.match(page, /AI First\./i);
   assert.match(page, /Bold Ideas\./i);
   assert.match(page, /One Last Click\./i);

@@ -63,8 +63,14 @@ export default function ContactForm() {
       if (!response.ok || !ok) throw new Error("relay failed");
       form.reset();
       setStatus("sent");
+      // The one thing on this page worth calling a conversion. gtag is loaded
+      // by layout.tsx; guard so a blocked tag never breaks the form.
+      const w = window as Window & { gtag?: (...args: unknown[]) => void };
+      w.gtag?.("event", "contact_submit", { method: "console_form" });
     } catch {
       setStatus("error");
+      const w = window as Window & { gtag?: (...args: unknown[]) => void };
+      w.gtag?.("event", "contact_error", { method: "console_form" });
     }
   };
 
