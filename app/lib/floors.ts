@@ -12,8 +12,16 @@
  * and scroll windows are measured from the live DOM rather than hardcoded.
  */
 
-/** Vertical distance between floor centres, in world units (1 unit = 1 voxel). */
-export const FLOOR_PITCH = 64;
+/**
+ * Vertical distance between floor centres, in world units (1 unit = 1 voxel).
+ *
+ * This is not a free parameter. Because the headings are rendered INSIDE the
+ * scene, world-space travel has to match how fast the page scrolls, or a title
+ * would fly past in a fraction of the scroll its copy occupies. At the text
+ * plane one viewport height is about 18 world units, and a floor is ~1.6
+ * viewports, so ~30 keeps 3D type and DOM copy in step.
+ */
+export const FLOOR_PITCH = 30;
 
 export type FloorId = "hero" | "services" | "proof" | "process" | "contact";
 

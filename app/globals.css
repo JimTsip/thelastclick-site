@@ -106,6 +106,50 @@ body::before {
   transform: translateY(0);
 }
 
+/* --- the 3D scene --------------------------------------------------------- */
+
+#tower-canvas {
+  position: fixed;
+  z-index: 0;
+  display: block;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/*
+ * Fake bloom.
+ *
+ * Real post-processing bloom lives inside the canvas, which sits BEHIND the
+ * copy — so it can never bleed glow onto the text. This veil can, because it is
+ * a DOM layer above the canvas and below the words. It also costs nothing,
+ * where UnrealBloomPass costs ~35KB and five full-screen passes, and its smooth
+ * gradients would fight the posterization that creates the pixel look.
+ */
+.bloom-veil {
+  position: fixed;
+  z-index: 1;
+  inset: 0;
+  background: radial-gradient(ellipse 60% 45% at 50% 42%, #7b43ff2e 0%, #7b43ff00 70%);
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+
+#tower-debug {
+  position: fixed;
+  z-index: 20;
+  right: 8px;
+  bottom: 8px;
+  border-radius: 3px;
+  background: #000000b3;
+  padding: 6px 10px;
+  color: #9dffb0;
+  font-family: ui-monospace, monospace;
+  font-size: 12px;
+  pointer-events: none;
+}
+
 /* --- fallback starfield --------------------------------------------------- */
 
 .starfield {
@@ -113,6 +157,25 @@ body::before {
   z-index: 0;
   inset: 0;
   pointer-events: none;
+}
+
+/* Once the tower is rendering it owns the background. */
+body.scene-live .starfield {
+  display: none;
+}
+
+/*
+ * When the scene has drawn the headings in 3D, the HTML ones step aside.
+ *
+ * opacity, not visibility or display: the element keeps its box, so the layout
+ * does not jump when the scene loads and the 3D title lands where the HTML one
+ * was — and unlike visibility:hidden, opacity:0 stays in the accessibility tree,
+ * so screen readers still announce every heading.
+ */
+body.scene-text .floor:not([data-floor="hero"]) h2,
+body.scene-text .floor-eyebrow {
+  opacity: 0;
+  transition: opacity 320ms ease;
 }
 
 .pixel {
@@ -327,16 +390,40 @@ h1 .accent-line {
 
 /* --- floor headings ------------------------------------------------------- */
 
+/* The eyebrow is a HUD readout, not a subtitle: pixel face, tracked wide, with
+   a blinking cursor in front of it. No box — the words sit on the scene. */
 .floor-eyebrow {
+  display: inline-flex;
+  align-items: center;
   color: var(--tlc-lavender);
-  font-size: clamp(12px, 1vw, 15px);
-  font-weight: 800;
-  letter-spacing: 3px;
+  font-family: var(--font-jersey), sans-serif;
+  font-size: clamp(18px, 1.6vw, 26px);
+  letter-spacing: 4px;
+  line-height: 1;
+  text-shadow: 3px 3px 0 var(--tlc-shadow-deep);
   text-transform: uppercase;
 }
 
+.floor-eyebrow::before {
+  margin-right: 12px;
+  animation: blink 1.1s steps(1, end) infinite;
+  color: var(--tlc-white);
+  content: "▮";
+}
+
+@keyframes blink {
+  0%,
+  55% {
+    opacity: 1;
+  }
+  56%,
+  100% {
+    opacity: 0.15;
+  }
+}
+
 h2 {
-  margin-top: 14px;
+  margin-top: 18px;
   font-family: var(--font-jersey), sans-serif;
   font-size: clamp(44px, 6vw, 96px);
   font-weight: 400;
@@ -347,47 +434,142 @@ h2 {
 }
 
 h3 {
-  font-size: clamp(18px, 1.5vw, 24px);
-  font-weight: 700;
-  letter-spacing: 0.3px;
+  color: var(--tlc-white);
+  font-family: var(--font-jersey), sans-serif;
+  font-size: clamp(26px, 2.3vw, 38px);
+  font-weight: 400;
+  letter-spacing: 1.5px;
+  line-height: 1;
+  text-shadow: 4px 4px 0 var(--tlc-shadow-deep);
+  text-transform: uppercase;
 }
 
-/* --- lists ---------------------------------------------------------------- */
+/* --- bare copy: no cards, no borders, words on the world ------------------ */
 
-.card-list,
-.step-list {
+.panel-list,
+.gate-list {
   display: grid;
-  margin-top: clamp(28px, 5svh, 56px);
-  gap: clamp(22px, 3.2svh, 40px);
+  margin-top: clamp(30px, 5svh, 56px);
+  gap: clamp(26px, 4svh, 44px);
 }
 
-.card-list p,
-.step-list p {
-  margin-top: 8px;
+.panel-list p,
+.gate-list p {
+  margin-top: 10px;
   max-width: var(--measure);
   color: var(--tlc-body);
-  font-size: clamp(15px, 1.15vw, 18px);
+  font-size: clamp(15px, 1.12vw, 18px);
+  font-weight: 500;
   line-height: 1.55;
+  text-shadow: 0 2px 0 #08063a, 0 0 18px #08063acc;
 }
 
-.card-list > li,
-.step-list > li {
+.panel {
   position: relative;
-  border-left: 3px solid var(--tlc-violet);
-  padding-left: clamp(16px, 1.6vw, 26px);
+  padding-left: clamp(22px, 2.2vw, 34px);
 }
 
-.step-list > li {
-  border-left-color: var(--tlc-lavender);
-}
-
-.step-number {
-  display: block;
-  margin-bottom: 4px;
+/* A pixel bullet standing in for the number, so the list still scans. */
+.panel-tag {
+  position: absolute;
+  top: 2px;
+  left: 0;
   color: var(--tlc-lavender);
   font-family: var(--font-jersey), sans-serif;
-  font-size: clamp(26px, 2.6vw, 40px);
+  font-size: clamp(18px, 1.5vw, 24px);
+  letter-spacing: 1px;
   line-height: 1;
+  text-shadow: 2px 2px 0 var(--tlc-shadow-deep);
+}
+
+.gate {
+  display: flex;
+  align-items: flex-start;
+  gap: clamp(16px, 1.8vw, 28px);
+}
+
+.gate-number {
+  flex: 0 0 auto;
+  color: var(--tlc-lavender);
+  font-family: var(--font-jersey), sans-serif;
+  font-size: clamp(44px, 4.6vw, 72px);
+  line-height: 0.8;
+  text-shadow: 5px 6px 0 var(--tlc-shadow-deep);
+}
+
+/* --- the depth gauge ------------------------------------------------------ */
+
+.hud {
+  position: fixed;
+  z-index: 3;
+  top: 50%;
+  left: clamp(10px, 1.6vw, 26px);
+  color: var(--tlc-lavender);
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.hud-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.hud-caption {
+  font-family: var(--font-jersey), sans-serif;
+  font-size: 15px;
+  letter-spacing: 4px;
+  opacity: 0.7;
+  text-transform: uppercase;
+}
+
+.hud-readout {
+  color: var(--tlc-white);
+  font-family: var(--font-jersey), sans-serif;
+  font-size: 34px;
+  letter-spacing: 2px;
+  line-height: 1;
+  text-shadow: 3px 4px 0 var(--tlc-shadow-deep);
+}
+
+.hud-track {
+  position: relative;
+  width: 4px;
+  height: min(30svh, 260px);
+  background: #ffffff26;
+}
+
+.hud-marker {
+  position: absolute;
+  left: -5px;
+  width: 14px;
+  height: 6px;
+  background: var(--tlc-lavender);
+  box-shadow: 0 0 12px var(--tlc-violet);
+}
+
+.hud-level {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  font-family: var(--font-jersey), sans-serif;
+  letter-spacing: 2px;
+}
+
+.hud-level b {
+  color: var(--tlc-white);
+  font-size: 20px;
+  font-weight: 400;
+  line-height: 1;
+}
+
+.hud-level i {
+  font-size: 13px;
+  font-style: normal;
+  opacity: 0.75;
+  writing-mode: vertical-rl;
 }
 
 /* --- contact -------------------------------------------------------------- */

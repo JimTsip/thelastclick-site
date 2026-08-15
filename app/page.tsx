@@ -1,4 +1,6 @@
 import Image from "next/image";
+import Hud from "./components/Hud";
+import TowerSceneMount from "./components/TowerSceneMount";
 import { FLOORS } from "./lib/floors";
 
 /**
@@ -103,6 +105,9 @@ export default function Home() {
         ))}
       </div>
 
+      <TowerSceneMount />
+      <Hud />
+
       <header className="site-header">
         <a className="brand" href="#hero" aria-label="The Last Click home">
           <Image src="/TLC-logo.png" alt="The Last Click" width={200} height={148} priority />
@@ -130,9 +135,12 @@ export default function Home() {
         <FloorSection {...floor("services")}>
           <p className="floor-eyebrow">What we build</p>
           <h2 id="services-title">Three things, done properly.</h2>
-          <ul className="card-list">
-            {SERVICES.map((service) => (
-              <li key={service.title}>
+          <ul className="panel-list">
+            {SERVICES.map((service, index) => (
+              <li key={service.title} className="panel">
+                <span className="panel-tag" aria-hidden="true">
+                  {String(index + 1).padStart(2, "0")}
+                </span>
                 <h3>{service.title}</h3>
                 <p>{service.body}</p>
               </li>
@@ -143,9 +151,12 @@ export default function Home() {
         <FloorSection {...floor("proof")}>
           <p className="floor-eyebrow">Track record</p>
           <h2 id="proof-title">Shipped, not shelved.</h2>
-          <ul className="card-list">
+          <ul className="panel-list">
             {PROOF.map((item) => (
-              <li key={item.title}>
+              <li key={item.title} className="panel">
+                <span className="panel-tag" aria-hidden="true">
+                  ★
+                </span>
                 <h3>{item.title}</h3>
                 <p>{item.body}</p>
               </li>
@@ -156,14 +167,16 @@ export default function Home() {
         <FloorSection {...floor("process")}>
           <p className="floor-eyebrow">How we work</p>
           <h2 id="process-title">Four gates, in order.</h2>
-          <ol className="step-list">
+          <ol className="gate-list">
             {PROCESS.map((item) => (
-              <li key={item.step}>
-                <span className="step-number" aria-hidden="true">
+              <li key={item.step} className="gate">
+                <span className="gate-number" aria-hidden="true">
                   {item.step}
                 </span>
-                <h3>{item.title}</h3>
-                <p>{item.body}</p>
+                <div className="gate-body">
+                  <h3>{item.title}</h3>
+                  <p>{item.body}</p>
+                </div>
               </li>
             ))}
           </ol>
