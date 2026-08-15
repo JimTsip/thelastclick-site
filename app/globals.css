@@ -518,6 +518,22 @@ h2 {
   filter: drop-shadow(8px 10px 0 var(--tlc-shadow-deep));
 }
 
+/* A one-line subtitle under a floor heading — the sentence the 3D title
+   can't carry on its own. */
+.floor-sub {
+  margin-top: 14px;
+  color: var(--tlc-lavender);
+  font-family: var(--font-jersey), sans-serif;
+  font-size: clamp(22px, 2vw, 32px);
+  letter-spacing: 2px;
+  text-shadow: 3px 3px 0 var(--tlc-shadow-deep);
+}
+
+/* When the 3D title is live it carries this line itself; hide the DOM copy. */
+body.scene-text .floor-sub {
+  opacity: 0;
+}
+
 h3 {
   color: var(--tlc-white);
   font-family: var(--font-jersey), sans-serif;
@@ -800,6 +816,12 @@ h3 {
   text-align: right;
   text-shadow: 3px 3px 0 var(--tlc-shadow-deep);
   white-space: nowrap;
+}
+
+/* The process title carries a third line (the AI accent), so its copy starts
+   a little lower than the other floors to leave the title its room. */
+.floor[data-floor="process"] .pipeline {
+  margin-top: clamp(120px, 20svh, 200px);
 }
 
 /* --- PROCESS: the pipeline — four stages on one line, arrows between ------- */
@@ -1177,6 +1199,12 @@ h3 {
   /* The fixed header is ~120px on a phone; nothing may start under it. */
   .floor {
     padding-top: 136px;
+  }
+
+  /* The desktop gap under the process title is for a three-line title beside
+     a four-column row; stacked, it just leaves a hole. */
+  .floor[data-floor="process"] .pipeline {
+    margin-top: 40px;
   }
 
   /* Contact is one viewport tall on desktop; on a phone the form needs more,

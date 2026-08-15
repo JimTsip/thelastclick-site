@@ -34,9 +34,9 @@ test("every floor's copy is in the static HTML, not injected by JS", async () =>
   assert.match(page, /AI-first products/i);
   assert.match(page, /Mobile apps &amp; games|Mobile apps & games/i);
   assert.match(page, /Web apps &amp; design systems|Web apps & design systems/i);
-  assert.match(page, /iOS and Android/i);
+  assert.match(page, /AI in production/i);
   assert.match(page, /Frame/);
-  assert.match(page, /Weeks, not quarters/i);
+  assert.match(page, /weeks, not quarters/i);
 });
 
 test("keeps the accessibility affordances the scene depends on", async () => {

@@ -51,11 +51,11 @@ const COIN_COUNT = 22;
 type Box = [x: number, y: number, z: number, sx: number, sy: number, sz: number];
 
 /** Copy that is drawn into the scene. Mirrors the DOM in page.tsx. */
-const FLOOR_TEXT: Record<string, { eyebrow: string; title: string[] }> = {
+const FLOOR_TEXT: Record<string, { eyebrow: string; title: string[]; accent?: string }> = {
   hero: { eyebrow: "", title: [] },
   services: { eyebrow: "What we build", title: ["Three things,", "done properly."] },
   proof: { eyebrow: "Track record", title: ["Shipped,", "not shelved."] },
-  process: { eyebrow: "How we work", title: ["Four gates,", "in order."] },
+  process: { eyebrow: "How we work", title: ["Four gates,", "in order."], accent: "AI-powered at every one of them." },
   contact: { eyebrow: "", title: ["Let's build what", "should exist next."] },
 };
 
@@ -243,13 +243,19 @@ export default function TowerScene() {
     };
 
     /** A crisp canvas texture of the type, for the modes that want a plane. */
-    const textureTitle = (lines: string[], fontPx: number, colour: string) => {
+    const textureTitle = (lines: string[], fontPx: number, colour: string, accent?: string) => {
       const probe = document.createElement("canvas").getContext("2d");
       if (!probe) return null;
       probe.font = `${fontPx}px ${displayFont}`;
-      const width = Math.ceil(Math.max(...lines.map((l) => probe.measureText(l.toUpperCase()).width))) + 16;
+      const accentPx = Math.round(fontPx * 0.3);
+      let width = Math.ceil(Math.max(...lines.map((l) => probe.measureText(l.toUpperCase()).width))) + 16;
+      if (accent) {
+        probe.font = `${accentPx}px ${displayFont}`;
+        width = Math.max(width, Math.ceil(probe.measureText(accent.toUpperCase()).width) + 16);
+      }
       const lineH = Math.round(fontPx * 1.02);
-      const height = lineH * lines.length + 16;
+      const accentH = accent ? Math.round(accentPx * 1.35) : 0;
+      const height = lineH * lines.length + accentH + 16;
       const surface = document.createElement("canvas");
       surface.width = width;
       surface.height = height;
@@ -259,6 +265,12 @@ export default function TowerScene() {
       ctx.textBaseline = "top";
       ctx.fillStyle = colour;
       lines.forEach((line, i) => ctx.fillText(line.toUpperCase(), 8, 8 + i * lineH));
+      if (accent) {
+        ctx.font = `${accentPx}px ${displayFont}`;
+        ctx.letterSpacing = "3px";
+        ctx.fillStyle = "#c9a8ff";
+        ctx.fillText(accent.toUpperCase(), 8, 8 + lines.length * lineH + Math.round(accentPx * 0.15));
+      }
       const texture = new THREE.CanvasTexture(surface);
       texture.colorSpace = THREE.SRGBColorSpace;
       texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
@@ -330,8 +342,8 @@ export default function TowerScene() {
       }
     };
 
-    const buildSky = (lines: string[], floorIndex: number, side: "left" | "right" | "center") => {
-      const tex = textureTitle(lines, 160, "#ffffff");
+    const buildSky = (lines: string[], floorIndex: number, side: "left" | "right" | "center", accent?: string) => {
+      const tex = textureTitle(lines, 160, "#ffffff", accent);
       if (!tex) return;
       // Half the shaft wide, deep behind the back wall, so wall geometry
       // occludes it and parallax makes it drift slower than the mosaic.
@@ -861,7 +873,7 @@ export default function TowerScene() {
       FLOORS.forEach((floor, index) => {
         const copy = FLOOR_TEXT[floor.id];
         if (!copy || copy.title.length === 0) return;
-        if (titleMode === "sky") buildSky(copy.title, index, floor.side);
+        if (titleMode === "sky") buildSky(copy.title, index, floor.side, copy.accent);
         else if (titleMode === "carved") buildCarved(copy.title, index, floor.side);
         else buildAssemble(copy.title, index, floor.side);
       });

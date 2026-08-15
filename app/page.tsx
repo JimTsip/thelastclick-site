@@ -29,7 +29,7 @@ const SERVICES = [
   {
     sprite: "phone",
     title: "Mobile apps & games",
-    body: "Native iOS and Android, first sketch to passed review. We've walked our own work through both stores.",
+    body: "Native, from the first sketch to a passed review. Games included — we have shipped our own, so we know where it bites.",
     stat: "iOS + ANDROID",
   },
   {
@@ -42,17 +42,18 @@ const SERVICES = [
 
 /** The scoreboard. Rank, name, dotted leader, the fact. */
 const PROOF = [
-  { rank: "1ST", title: "From idea to store", value: "The whole distance, every time" },
-  { rank: "2ND", title: "iOS and Android", value: "Both platforms, both reviews" },
+  { rank: "1ST", title: "From brief to live", value: "The whole distance, every time" },
+  { rank: "2ND", title: "AI in production", value: "Answering, deciding, doing real work" },
   { rank: "3RD", title: "We ship what we sell", value: "Built for ourselves first" },
 ];
 
 /** The pipeline. Four stages, one line, arrows between. */
+/** Four gates. AI is inside every one of them — that is the point. */
 const PROCESS = [
-  { step: "01", sprite: "target", title: "Frame", body: "Find the real problem before anyone opens an editor." },
-  { step: "02", sprite: "pencil", title: "Design", body: "Draw it first. Decisions are cheap on a canvas." },
-  { step: "03", sprite: "hammer", title: "Build", body: "Weeks, not quarters. AI raises the floor, taste raises the ceiling." },
-  { step: "04", sprite: "rocket", title: "Ship", body: "Through review, into hands. Compiling isn't finished." },
+  { step: "01", sprite: "target", title: "Frame", body: "AI reads the brief, the market and the edge cases with us. We find the real problem before anyone opens an editor." },
+  { step: "02", sprite: "pencil", title: "Design", body: "AI drafts twenty directions; taste picks one. Decisions are cheap on a canvas and we make a lot of them, fast." },
+  { step: "03", sprite: "hammer", title: "Build", body: "AI writes alongside us — weeks, not quarters. It raises the floor; judgment raises the ceiling." },
+  { step: "04", sprite: "rocket", title: "Ship", body: "AI runs inside the product, and around it: monitoring, support, the next iteration. Compiling isn't finished." },
 ];
 
 function FloorSection({
@@ -159,6 +160,7 @@ export default function Home() {
         <FloorSection {...floor("process")}>
           <p className="floor-eyebrow">How we work</p>
           <h2 id="process-title">Four gates, in order.</h2>
+          <p className="floor-sub">AI-powered at every one of them.</p>
           <ol className="pipeline">
             {PROCESS.map((stage, index) => (
               <li key={stage.step} className="stage" style={{ "--i": index } as React.CSSProperties}>
