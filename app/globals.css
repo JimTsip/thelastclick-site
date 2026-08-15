@@ -404,17 +404,11 @@ body.scene-text .floor::before {
   text-align: right;
 }
 
-/* Right-aligned floors mirror the scoreboard so it hangs off the right edge:
-   value · leader · name · rank. Reorder with grid areas, not direction, so
-   text inside stays LTR. */
+/* The scoreboard always reads rank · name · leader · fact, whichever side the
+   heading is on — a score table that reads backwards is not a design choice. */
 .floor[data-side="right"] .score-row {
-  grid-template-columns: auto 1fr auto auto;
+  text-align: left;
 }
-
-.floor[data-side="right"] .score-rank { order: 4; }
-.floor[data-side="right"] .score-name { order: 3; }
-.floor[data-side="right"] .score-leader { order: 2; }
-.floor[data-side="right"] .score-value { order: 1; text-align: left; }
 
 .floor[data-side="left"] { --scrim-x: 26%; }
 .floor[data-side="right"] { --scrim-x: 74%; }
