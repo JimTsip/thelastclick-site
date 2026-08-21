@@ -21,6 +21,10 @@ test("exports the The Last Click landing page", async () => {
   assert.doesNotMatch(page, /mailto:/i, "email address is exposed in the page");
   assert.match(page, /<form[^>]+class="console"/, "contact form is missing");
   assert.match(page, /The Last Click © 2026/i);
+  // Apple (and any registry check) reads the visible page, not the JSON-LD:
+  // the legal entity must stay on screen or the domain stops proving who owns it.
+  assert.match(page, /THE LAST CLICK L\.P\./, "legal entity name is missing from the footer");
+  assert.match(page, /GEMI Reg\. No\. 183032403000/, "GEMI number is missing from the footer");
 });
 
 test("every floor's copy is in the static HTML, not injected by JS", async () => {

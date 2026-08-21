@@ -187,6 +187,10 @@ export default function Home() {
 
       <footer className="site-footer">
         <p>The Last Click © 2026</p>
+        <p className="legal">
+          THE LAST CLICK L.P. · Agiou Konstantinou 59-61, Maroussi 15124, Greece
+        </p>
+        <p className="legal">GEMI Reg. No. 183032403000 · VAT EL802801218</p>
       </footer>
     </>
   );
