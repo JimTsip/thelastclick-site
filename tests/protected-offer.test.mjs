@@ -1,11 +1,12 @@
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
+import { access, readFile } from "node:fs/promises";
 import test from "node:test";
 
 const projectRoot = new URL("../", import.meta.url);
-const offerPath = new URL("out/offers/real-estate-project/index.html", projectRoot);
+const offerPath = new URL("protected-offers/real-estate-project.html", projectRoot);
+const oldPublicPath = new URL("out/offers/real-estate-project/index.html", projectRoot);
 
-test("publishes the real-estate offer only as encrypted content", async () => {
+test("keeps the real-estate offer encrypted and outside predictable public paths", async () => {
   const page = await readFile(offerPath, "utf8");
 
   assert.match(page, /Ιδιωτική οικονομική πρόταση/);
@@ -18,4 +19,6 @@ test("publishes the real-estate offer only as encrypted content", async () => {
   assert.doesNotMatch(page, /€4\.700/);
   assert.doesNotMatch(page, /Κάθε σπίτι μία φορά/);
   assert.doesNotMatch(page, /Πλήρες πρόγραμμα/);
+
+  await assert.rejects(access(oldPublicPath), "the old predictable offer URL is still exported");
 });

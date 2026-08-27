@@ -27,6 +27,13 @@ jobs:
       - run: npm run lint
       - run: npm run build
       - run: node --test tests/*.test.mjs
+      - name: Publish protected offers at secret paths
+        env:
+          REAL_ESTATE_OFFER_SLUG: ${{ secrets.REAL_ESTATE_OFFER_SLUG }}
+        run: |
+          test -n "$REAL_ESTATE_OFFER_SLUG"
+          mkdir -p "out/p/$REAL_ESTATE_OFFER_SLUG"
+          cp protected-offers/real-estate-project.html "out/p/$REAL_ESTATE_OFFER_SLUG/index.html"
       - run: cp .nojekyll out/.nojekyll
       - uses: actions/upload-pages-artifact@v3
         with:
