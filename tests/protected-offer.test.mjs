@@ -18,6 +18,9 @@ test("keeps the real-estate offer encrypted and outside predictable public paths
   assert.match(page, /iterations: 600000/);
   assert.match(page, /payload: "[A-Za-z0-9+/=]+"/);
   assert.match(page, /noindex,nofollow,noarchive,nosnippet/);
+  assert.match(page, /TLC-logo\.png/);
+  assert.match(page, /#7b43ff/);
+  assert.doesNotMatch(page, /#ffb454/i);
 
   assert.doesNotMatch(page, /AI Real Estate Aggregator/);
   assert.doesNotMatch(page, /€4\.700/);
