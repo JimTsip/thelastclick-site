@@ -9,6 +9,10 @@ const oldPublicPath = new URL("out/offers/real-estate-project/index.html", proje
 test("keeps the real-estate offer encrypted and outside predictable public paths", async () => {
   const page = await readFile(offerPath, "utf8");
 
+  assert.ok(
+    Buffer.byteLength(page, "utf8") > 5_000_000,
+    "the encrypted desktop/mobile mockups are missing from the offer",
+  );
   assert.match(page, /Ιδιωτική οικονομική πρόταση/);
   assert.match(page, /name: "AES-GCM"/);
   assert.match(page, /iterations: 600000/);
