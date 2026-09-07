@@ -30,10 +30,14 @@ jobs:
       - name: Publish protected offers at secret paths
         env:
           REAL_ESTATE_OFFER_SLUG: ${{ secrets.REAL_ESTATE_OFFER_SLUG }}
+          EASYHOME_DECK_SLUG: ${{ secrets.EASYHOME_DECK_SLUG }}
         run: |
           test -n "$REAL_ESTATE_OFFER_SLUG"
           mkdir -p "out/p/$REAL_ESTATE_OFFER_SLUG"
           cp protected-offers/real-estate-project.html "out/p/$REAL_ESTATE_OFFER_SLUG/index.html"
+          test -n "$EASYHOME_DECK_SLUG"
+          mkdir -p "out/p/$EASYHOME_DECK_SLUG"
+          cp protected-offers/easyhome-deck.html "out/p/$EASYHOME_DECK_SLUG/index.html"
       - run: cp .nojekyll out/.nojekyll
       - uses: actions/upload-pages-artifact@v3
         with:
