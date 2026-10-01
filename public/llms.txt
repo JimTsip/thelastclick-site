@@ -22,7 +22,6 @@ Everything we sell came out of building something real first. Our own products a
 ## Things we have shipped
 - [Padlboard](https://padlboard.ai) — padel scoring for Apple Watch and iPhone.
 - [BoomBoats](https://boomboats.com) — a voxel Battleship game.
-- [Wild Rush](https://thewildrush.com) — an obstacle-course racing game.
 - [Cookonomics](https://cookonomics.com) — food costing and margins for restaurants and food businesses.
 - [FlexUI](https://flexui.ai) — an API-driven design system that keeps AI coding tools on brand.
 
