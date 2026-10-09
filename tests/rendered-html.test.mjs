@@ -9,7 +9,7 @@ test("exports the The Last Click landing page", async () => {
   const page = await html();
 
   assert.match(page, /<title>The Last Click — AI-first product studio in Athens/i);
-  assert.match(page, /<link rel="canonical" href="https:\/\/thelastclick\.gr\/"/, "canonical is missing");
+  assert.match(page, /<link rel="canonical" href="https:\/\/thelastclick\.ai\/"/, "canonical is missing");
   assert.match(page, /"@type":\["Organization","ProfessionalService"\]/, "Organization JSON-LD is missing");
   assert.match(page, /"streetAddress":"59-61 Agiou Konstantinou"/, "address JSON-LD is missing");
   assert.match(page, /AI First\./i);
@@ -56,7 +56,7 @@ test("keeps the accessibility affordances the scene depends on", async () => {
 
 test("exports domain and brand assets", async () => {
   const cname = await readFile(new URL("out/CNAME", projectRoot), "utf8");
-  assert.equal(cname.trim(), "thelastclick.gr");
+  assert.equal(cname.trim(), "thelastclick.ai");
   await access(new URL("out/TLC-logo.png", projectRoot));
   await access(new URL("out/opengraph-image.png", projectRoot));
 });

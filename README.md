@@ -1,6 +1,6 @@
 # The Last Click
 
-Official landing page for [thelastclick.gr](https://thelastclick.gr), implemented from the Pencil design in the parent TLC workspace.
+Official landing page for [thelastclick.ai](https://thelastclick.ai), implemented from the Pencil design in the parent TLC workspace.
 
 ## Development
 

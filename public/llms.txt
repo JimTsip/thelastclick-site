@@ -26,7 +26,7 @@ Everything we sell came out of building something real first. Our own products a
 - [FlexUI](https://flexui.ai) — an API-driven design system that keeps AI coding tools on brand.
 
 ## Contact
-Use the form at https://thelastclick.gr/#contact — tell us the idea you cannot stop thinking about, and we will tell you honestly whether we are the right people to build it.
+Use the form at https://thelastclick.ai/#contact — tell us the idea you cannot stop thinking about, and we will tell you honestly whether we are the right people to build it.
 
 ## Pages
-- [Home](https://thelastclick.gr/): the studio, what we build, how we work, contact form.
+- [Home](https://thelastclick.ai/): the studio, what we build, how we work, contact form.

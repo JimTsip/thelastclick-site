@@ -48,4 +48,4 @@ Allow: /
 User-agent: meta-externalagent
 Allow: /
 
-Sitemap: https://thelastclick.gr/sitemap.xml
+Sitemap: https://thelastclick.ai/sitemap.xml

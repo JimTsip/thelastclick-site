@@ -17,7 +17,7 @@ const jersey = Jersey_10({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://thelastclick.gr"),
+  metadataBase: new URL("https://thelastclick.ai"),
   // The title is the one ranking signal we fully control. It has to say what
   // the studio does and where — nobody searches for a slogan.
   title: "The Last Click — AI-first product studio in Athens · AI products, apps, games & design systems",
@@ -34,7 +34,7 @@ export const metadata: Metadata = {
     "web app development",
     "The Last Click",
   ],
-  alternates: { canonical: "https://thelastclick.gr/" },
+  alternates: { canonical: "https://thelastclick.ai/" },
   robots: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1 },
   // Icons and the OG image come from the app/ file conventions:
   // favicon.ico, icon.png, apple-icon.png, opengraph-image.png.
@@ -42,7 +42,7 @@ export const metadata: Metadata = {
     title: "The Last Click — AI-first product studio in Athens",
     description:
       "Bring us the work; we turn it into a live AI experience. AI products, apps, games and design systems — from brief to live.",
-    url: "https://thelastclick.gr/",
+    url: "https://thelastclick.ai/",
     siteName: "The Last Click",
     type: "website",
     locale: "en_US",
@@ -58,15 +58,15 @@ export const metadata: Metadata = {
 const organizationSchema = {
   "@context": "https://schema.org",
   "@type": ["Organization", "ProfessionalService"],
-  "@id": "https://thelastclick.gr/#org",
+  "@id": "https://thelastclick.ai/#org",
   name: "The Last Click",
   legalName: "THE LAST CLICK L.P.",
   vatID: "EL802801218",
   taxID: "802801218",
   identifier: { "@type": "PropertyValue", propertyID: "GEMI", value: "183032403000" },
-  url: "https://thelastclick.gr/",
-  logo: "https://thelastclick.gr/TLC-logo.png",
-  image: "https://thelastclick.gr/opengraph-image.png",
+  url: "https://thelastclick.ai/",
+  logo: "https://thelastclick.ai/TLC-logo.png",
+  image: "https://thelastclick.ai/opengraph-image.png",
   description:
     "AI-first product studio in Athens. We turn briefs into live AI experiences: AI products and agents, mobile apps and games, web apps and design systems.",
   email: "hello@thelastclick.gr",
@@ -135,11 +135,11 @@ const organizationSchema = {
 const websiteSchema = {
   "@context": "https://schema.org",
   "@type": "WebSite",
-  "@id": "https://thelastclick.gr/#website",
+  "@id": "https://thelastclick.ai/#website",
   name: "The Last Click",
-  url: "https://thelastclick.gr/",
+  url: "https://thelastclick.ai/",
   inLanguage: "en",
-  publisher: { "@id": "https://thelastclick.gr/#org" },
+  publisher: { "@id": "https://thelastclick.ai/#org" },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

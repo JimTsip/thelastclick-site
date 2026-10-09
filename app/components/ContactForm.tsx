@@ -49,10 +49,10 @@ export default function ContactForm() {
         method: "POST",
         headers: { Accept: "application/json", "Content-Type": "application/json" },
         body: JSON.stringify({
-          _subject: `New enquiry from ${name} — thelastclick.gr`,
+          _subject: `New enquiry from ${name} — thelastclick.ai`,
           _template: "table",
           _captcha: "false",
-          _url: "https://thelastclick.gr",
+          _url: "https://thelastclick.ai",
           name,
           email,
           message,
