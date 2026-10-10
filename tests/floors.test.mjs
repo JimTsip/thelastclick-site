@@ -24,7 +24,7 @@ async function floorIds() {
 test("FLOORS is a non-empty list of unique ids", async () => {
   const ids = await floorIds();
 
-  assert.ok(ids.length > 0, "FLOORS must not be empty");
+  assert.ok(ids.length >= 4, `expected at least 4 floors, found ${ids.length}`);
   assert.equal(new Set(ids).size, ids.length, `duplicate floor id in ${ids.join(", ")}`);
 });
 

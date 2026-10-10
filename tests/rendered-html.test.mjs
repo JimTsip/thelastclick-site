@@ -8,13 +8,13 @@ const html = () => readFile(new URL("out/index.html", projectRoot), "utf8");
 test("exports the The Last Click landing page", async () => {
   const page = await html();
 
-  assert.match(page, /<title>The Last Click — Independent Studio/i);
+  assert.match(page, /<title>The Last Click — Independent Game Studio/i);
   assert.match(page, /<link rel="canonical" href="https:\/\/thelastclick\.ai\/"/, "canonical is missing");
   assert.match(page, /"@type":"Organization"/, "Organization JSON-LD is missing");
   assert.match(page, /"streetAddress":"59-61 Agiou Konstantinou"/, "address JSON-LD is missing");
   assert.match(page, /Beyond the click\./i);
-  assert.match(page, /A new chapter begins\./i);
-  assert.match(page, /independent studio based in Greece/i);
+  assert.match(page, /A new chapter of play\./i);
+  assert.match(page, /independent game studio based in Greece/i);
   // The address is deliberately NOT in the page: enquiries go through the
   // relay in ContactForm, so scrapers get nothing.
   assert.doesNotMatch(page, /mailto:/i, "email address is exposed in the page");
@@ -29,9 +29,18 @@ test("exports the The Last Click landing page", async () => {
 test("every floor's copy is in the static HTML, not injected by JS", async () => {
   const page = await html();
 
-  assert.match(page, /Ideas with purpose\./i);
-  assert.match(page, /talk\./i);
-  assert.doesNotMatch(page, /BoomBoats|DADLINE|ShipDuel|VideoGame|games-grid|gameplay-grid|hero-games|AI-first|AI-powered|ProfessionalService|OfferCatalog/);
+  assert.match(page, /Find your next game\./i);
+  assert.match(page, /This is how we play\./i);
+  assert.match(page, /Made at The Last Click\./i);
+  assert.match(page, /talk games\./i);
+  assert.match(page, /BoomBoats/);
+  assert.match(page, /DADLINE: Family Rush/);
+  assert.match(page, /ShipDuel/);
+  assert.match(page, /Coming soon/);
+  assert.match(page, /id6794503743/);
+  assert.match(page, /id6802018413/);
+  assert.match(page, /dev\.jimtsip\.boomboats/);
+  assert.doesNotMatch(page, /AI-first|AI-powered|ProfessionalService|OfferCatalog/);
 
 });
 
