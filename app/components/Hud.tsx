@@ -6,10 +6,10 @@ import { FLOORS } from "../lib/floors";
 
 const LABELS: Record<string, string> = {
   hero: "SURFACE",
-  services: "WORKSHOP",
-  proof: "RECORD",
-  process: "PIPELINE",
-  contact: "VAULT",
+  games: "GAMES",
+  gameplay: "GAMEPLAY",
+  studio: "STUDIO",
+  contact: "CONTACT",
 };
 
 /**

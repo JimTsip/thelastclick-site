@@ -1,32 +1,22 @@
 # The Last Click
 
-> The Last Click is an AI-first product studio in Athens, Greece. Bring us the work — a product, a service, a process, an idea — and we turn it into a live AI experience that people actually use. Not a deck, not a prototype in a folder: something running, in front of real users, doing real work.
+> The Last Click is an independent game studio based in Greece. We create BoomBoats, DADLINE: Family Rush and ShipDuel.
 
-Legal name: THE LAST CLICK L.P. · Athens (Maroussi), Greece · Founded by Jim Tsipoutas (https://jimtsipoutas.com)
+## Studio
+Beyond the click. A new chapter of play.
+Legal name: THE LAST CLICK L.P. · Maroussi, Greece.
 
-## What we build
-- **AI-first products and agents** — voice agents, assistants, automations, and the interfaces that make them feel inevitable. The model, the plumbing, and the judgment about which of the three is the hard part.
-- **Mobile apps and games** — native, from the first sketch to a passed review. We have shipped our own, so we know where it bites.
-- **Web apps and design systems** — interfaces that stay coherent as they grow, and the system underneath that keeps them that way.
+## Games
+- BoomBoats: naval strategy in a voxel ocean. Out now on iOS and Android.
+  - iOS: https://apps.apple.com/us/app/boomboats-naval-battleship/id6794503743
+  - Android: https://play.google.com/store/apps/details?id=dev.jimtsip.boomboats
+- DADLINE: Family Rush: a comic-book running adventure about family errands. Out now on iOS.
+  - iOS: https://apps.apple.com/us/app/dadline-family-rush/id6802018413
+- ShipDuel: pirate cannon duels and winning-streak decisions. Coming soon; no public download destination announced.
 
-## How we work
-Four gates, in order, and AI is inside every one of them:
-1. **Frame** — AI reads the brief, the market and the edge cases with us. We find the real problem before anyone opens an editor.
-2. **Design** — AI drafts twenty directions; taste picks one. Decisions are cheap on a canvas and we make a lot of them, fast.
-3. **Build** — AI writes alongside us: weeks, not quarters. It raises the floor; judgment raises the ceiling.
-4. **Ship** — AI runs inside the product and around it: monitoring, support, the next iteration. Compiling isn't finished.
+## Contact and updates
+- Contact the studio: https://thelastclick.ai/#contact
+- Instagram: https://www.instagram.com/thelastclickgames/
 
-## Track record
-Everything we sell came out of building something real first. Our own products are live; our own AI agents answer the phone. We are our own most demanding client.
-
-## Things we have shipped
-- [Padlboard](https://padlboard.ai) — padel scoring for Apple Watch and iPhone.
-- [BoomBoats](https://boomboats.com) — a voxel Battleship game.
-- [Cookonomics](https://cookonomics.com) — food costing and margins for restaurants and food businesses.
-- [FlexUI](https://flexui.ai) — an API-driven design system that keeps AI coding tools on brand.
-
-## Contact
-Use the form at https://thelastclick.ai/#contact — tell us the idea you cannot stop thinking about, and we will tell you honestly whether we are the right people to build it.
-
-## Pages
-- [Home](https://thelastclick.ai/): the studio, what we build, how we work, contact form.
+## Website
+- https://thelastclick.ai/: games, gameplay, studio and contact.
