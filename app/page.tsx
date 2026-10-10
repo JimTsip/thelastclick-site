@@ -28,7 +28,7 @@ export default function Home() {
         <p className="hero-chapter">A new chapter of play.</p>
         <p className="hero-tagline">The Last Click is an independent game studio based in Greece. We create BoomBoats, DADLINE: Family Rush and ShipDuel.</p>
         <a className="primary-link" href="#games">Explore our games <span aria-hidden="true">↘</span></a>
-        <ul className="hero-games" aria-label="Meet our games">{GAMES.map((game) => <li key={game.id}><a href={"#" + game.id} aria-label={"Explore " + game.name}><Image src={game.art} alt={game.artAlt} width={640} height={360} sizes="(max-width: 600px) 30vw, 240px" priority /><span>{game.name}</span></a></li>)}</ul>
+        <ul className="hero-games" aria-label="Meet our games">{GAMES.map((game) => <li key={game.id}><a href={"#" + game.id} aria-label={"Explore " + game.name}><Image src={game.logo} alt={game.name + " logo"} width={game.logoWidth} height={game.logoHeight} sizes="(max-width: 600px) 30vw, 240px" priority /></a></li>)}</ul>
       </FloorSection>
       <FloorSection {...floor("games")}>
         <p className="floor-eyebrow">Our games</p><h2 id="games-title">Find your next game.</h2>

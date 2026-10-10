@@ -41,7 +41,7 @@ export interface Floor {
 }
 
 export const FLOORS: Floor[] = [
-  { id: "hero", span: 1.4, side: "center" },
+  { id: "hero", span: 1.8, side: "center" },
   { id: "games", span: 1.6, side: "center" },
   { id: "gameplay", span: 1.6, side: "center" },
   // { id: "products", span: 1.6, side: "left" },  ← insertion point, see module docs

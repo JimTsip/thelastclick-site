@@ -1290,9 +1290,8 @@ h1 { font-size:clamp(54px,9.5vw,142px);line-height:1;letter-spacing:0; }
 .primary-link:hover { background:var(--tlc-white); }
 .hero-games { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;width:min(100%,720px);margin-top:30px; }
 .hero-games a { display:block;text-decoration:none; }
-.hero-games img { width:100%;height:clamp(80px,10vw,130px);object-fit:cover;border:1px solid #ffffff30; }
-.hero-games li:nth-child(2) img { object-position:50% 25%; }
-.hero-games span { display:block;margin-top:8px;font-size:12px;font-weight:650; }
+.hero-games a { min-height:140px;display:flex;align-items:center;justify-content:center; }
+.hero-games img { width:100%;height:140px;object-fit:contain; }
 .section-intro { margin-top:22px;font-size:17px;line-height:1.6;color:var(--tlc-body); }
 .games-grid { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:32px;margin-top:44px;text-align:left; }
 .game-card { display:flex;flex-direction:column;min-width:0;scroll-margin-top:160px; }
@@ -1333,7 +1332,7 @@ h1 { font-size:clamp(54px,9.5vw,142px);line-height:1;letter-spacing:0; }
  h1 span { white-space:normal; }
  .studio-kicker { font-size:10px;line-height:1.7; }
  .hero-chapter { font-size:30px; }.hero-tagline { font-size:15px; }
- .hero-games { gap:10px; }.hero-games span { font-size:10px;line-height:1.4; }
+ .hero-games { gap:10px; }.hero-games a { min-height:100px; }.hero-games img { height:100px; }
  .games-grid { grid-template-columns:1fr;gap:56px; }
  .game-art img { height:auto;aspect-ratio:16/9; }
  .game-invitation { min-height:0; }.game-card h3 { font-size:26px; }
