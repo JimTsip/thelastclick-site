@@ -77,7 +77,7 @@ export default function ContactForm() {
   return (
     <form className="console" onSubmit={submit} noValidate>
       <p className="console-line" aria-hidden="true">
-        <span className="console-prompt">&gt;</span> contact_the_studio
+        <span className="console-prompt">&gt;</span> new_project.init
       </p>
 
       <label className="console-field">
@@ -91,7 +91,7 @@ export default function ContactForm() {
       </label>
 
       <label className="console-field console-field--wide">
-        <span className="console-label">message</span>
+        <span className="console-label">the idea</span>
         <textarea name="message" rows={4} required maxLength={3000} />
       </label>
 
@@ -106,12 +106,12 @@ export default function ContactForm() {
 
       <div className="console-actions">
         <button type="submit" className="console-submit" disabled={status === "sending"}>
-          {status === "sending" ? "Sending…" : "Send message"}
+          {status === "sending" ? "Sending…" : "Send it"}
           <span aria-hidden="true"> ▸</span>
         </button>
         <p className="console-status" role="status" aria-live="polite">
-          {status === "sent" && "Thanks for getting in touch. Your message has been sent."}
-          {status === "error" && "We could not send your message. Check your name, email and message, then try again."}
+          {status === "sent" && "Received. We read everything — expect a reply within two working days."}
+          {status === "error" && "Something's missing — a name, a real email address and the idea."}
         </p>
       </div>
     </form>

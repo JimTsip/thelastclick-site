@@ -23,7 +23,7 @@
  */
 export const FLOOR_PITCH = 30;
 
-export type FloorId = "hero" | "games" | "gameplay" | "studio" | "contact";
+export type FloorId = "hero" | "services" | "proof" | "process" | "contact";
 
 export interface Floor {
   id: FloorId;
@@ -41,11 +41,11 @@ export interface Floor {
 }
 
 export const FLOORS: Floor[] = [
-  { id: "hero", span: 1.4, side: "center" },
-  { id: "games", span: 1.6, side: "center" },
-  { id: "gameplay", span: 1.6, side: "center" },
+  { id: "hero", span: 1.8, side: "center" },
+  { id: "services", span: 1.6, side: "left" },
+  { id: "proof", span: 1.6, side: "right" },
   // { id: "products", span: 1.6, side: "left" },  ← insertion point, see module docs
-  { id: "studio", span: 1.6, side: "center" },
+  { id: "process", span: 1.6, side: "center" },
   { id: "contact", span: 1.0, side: "center" },
 ];
 

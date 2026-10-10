@@ -53,10 +53,10 @@ type Box = [x: number, y: number, z: number, sx: number, sy: number, sz: number]
 /** Copy that is drawn into the scene. Mirrors the DOM in page.tsx. */
 const FLOOR_TEXT: Record<string, { eyebrow: string; title: string[]; accent?: string }> = {
   hero: { eyebrow: "", title: [] },
-  games: { eyebrow: "Our games", title: ["Find your", "next game."] },
-  gameplay: { eyebrow: "Inside the games", title: ["This is how", "we play."] },
-  studio: { eyebrow: "The studio", title: ["Made at", "The Last Click."] },
-  contact: { eyebrow: "", title: ["Let's talk games."] },
+  services: { eyebrow: "What we build", title: ["Three things,", "done properly."] },
+  proof: { eyebrow: "Track record", title: ["Shipped,", "not shelved."] },
+  process: { eyebrow: "How we work", title: ["Four gates,", "in order."], accent: "AI-powered at every one of them." },
+  contact: { eyebrow: "", title: ["Let's build what", "should exist next."] },
 };
 
 export default function TowerScene() {

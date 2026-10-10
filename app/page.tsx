@@ -3,74 +3,195 @@ import BootScreen from "./components/BootScreen";
 import ContactForm from "./components/ContactForm";
 import Hud from "./components/Hud";
 import TowerSceneMount from "./components/TowerSceneMount";
-import { FLOORS, type Floor } from "./lib/floors";
-import { GAMES, STUDIO_INSTAGRAM } from "./lib/games";
+import { FLOORS } from "./lib/floors";
 
-const PIXELS = ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen"];
-function FloorSection({ id, span, side, children }: Floor & { children: React.ReactNode }) {
-  return <section className="floor" id={id} data-floor={id} data-side={side} style={{ "--span": span } as React.CSSProperties} aria-labelledby={id + "-title"}><div className="floor-inner">{children}</div></section>;
+/**
+ * Decorative pixels. They are the background when WebGL is unavailable or
+ * hasn't loaded yet; the 3D scene hides them once it takes over.
+ */
+const PIXELS = [
+  "one", "two", "three", "four", "five", "six", "seven",
+  "eight", "nine", "ten", "eleven", "twelve", "thirteen",
+];
+
+/**
+ * Each service is a "class" on a character-select screen: a big pixel icon,
+ * a name, and two lines. The icons are 8×8 sprites drawn with box-shadow in
+ * CSS (see .sprite-*), so they cost no images and scale with the type.
+ */
+const SERVICES = [
+  {
+    sprite: "brain",
+    title: "AI-first products",
+    body: "From a sentence to something people use. Model, interface, plumbing — and the judgment about which one is the hard part.",
+    stat: "IDEA → SHIPPED",
+  },
+  {
+    sprite: "phone",
+    title: "Mobile apps & games",
+    body: "Native, from the first sketch to a passed review. Games included — we have shipped our own, so we know where it bites.",
+    stat: "iOS + ANDROID",
+  },
+  {
+    sprite: "grid",
+    title: "Web apps & design systems",
+    body: "Interfaces that stay coherent as they grow, and the system underneath that keeps them that way.",
+    stat: "SYSTEM-FIRST",
+  },
+];
+
+/** The scoreboard. Rank, name, dotted leader, the fact. */
+const PROOF = [
+  { rank: "1ST", title: "From brief to live", value: "The whole distance, every time" },
+  { rank: "2ND", title: "AI in production", value: "Answering, deciding, doing real work" },
+  { rank: "3RD", title: "We ship what we sell", value: "Built for ourselves first" },
+];
+
+/** The pipeline. Four stages, one line, arrows between. */
+/** Four gates. AI is inside every one of them — that is the point. */
+const PROCESS = [
+  { step: "01", sprite: "target", title: "Frame", body: "AI reads the brief, the market and the edge cases with us. We find the real problem before anyone opens an editor." },
+  { step: "02", sprite: "pencil", title: "Design", body: "AI drafts twenty directions; taste picks one. Decisions are cheap on a canvas and we make a lot of them, fast." },
+  { step: "03", sprite: "hammer", title: "Build", body: "AI writes alongside us — weeks, not quarters. It raises the floor; judgment raises the ceiling." },
+  { step: "04", sprite: "rocket", title: "Ship", body: "AI runs inside the product, and around it: monitoring, support, the next iteration. Compiling isn't finished." },
+];
+
+function FloorSection({
+  id,
+  span,
+  side,
+  children,
+}: {
+  id: string;
+  span: number;
+  side: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section
+      className="floor"
+      id={id}
+      data-floor={id}
+      data-side={side}
+      style={{ "--span": span } as React.CSSProperties}
+      aria-labelledby={`${id}-title`}
+    >
+      <div className="floor-inner">{children}</div>
+    </section>
+  );
 }
+
 export default function Home() {
-  const floor = (id: Floor["id"]) => FLOORS.find((f) => f.id === id)!;
-  return <>
-    <BootScreen />
-    <a className="skip-link" href="#games">Skip to games</a>
-    <div className="starfield" aria-hidden="true">{PIXELS.map((pixel) => <span key={pixel} className={"pixel pixel-" + pixel} />)}</div>
-    <TowerSceneMount /><Hud />
-    <header className="site-header">
-      <a className="brand" href="#hero" aria-label="The Last Click home"><Image src="/TLC-logo.png" alt="The Last Click" width={200} height={148} priority /></a>
-      <nav className="site-nav" aria-label="Main navigation"><a href="#games">Games</a><a href="#studio">Studio</a><a href="#contact">Contact</a></nav>
-    </header>
-    <main className="tower">
-      <FloorSection {...floor("hero")}>
-        <p className="studio-kicker">Independent game studio · Greece</p>
-        <h1 id="hero-title"><span>Beyond the click.</span></h1>
-        <p className="hero-chapter">A new chapter of play.</p>
-        <p className="hero-tagline">The Last Click is an independent game studio based in Greece. We create BoomBoats, DADLINE: Family Rush and ShipDuel.</p>
-        <a className="primary-link" href="#games">Explore our games <span aria-hidden="true">↘</span></a>
-        <ul className="hero-games" aria-label="Meet our games">{GAMES.map((game) => <li key={game.id}><a href={"#" + game.id} aria-label={"Explore " + game.name}><Image src={game.art} alt={game.artAlt} width={640} height={360} sizes="(max-width: 600px) 30vw, 240px" priority /><span>{game.name}</span></a></li>)}</ul>
-      </FloorSection>
-      <FloorSection {...floor("games")}>
-        <p className="floor-eyebrow">Our games</p><h2 id="games-title">Find your next game.</h2>
-        <p className="section-intro">Command a fleet. Run the family errands. Face a rival at sea.</p>
-        <div className="games-grid">{GAMES.map((game) => <article className={"game-card game-card--" + game.id} id={game.id} key={game.id} aria-labelledby={game.id + "-title"}>
-          <div className="game-art"><Image src={game.art} alt={game.artAlt} width={960} height={540} sizes="(max-width: 900px) 90vw, 30vw" /></div>
-          <span className={"game-status " + (game.id === "shipduel" ? "game-status--soon" : "")}>{game.status}</span>
-          <h3 id={game.id + "-title"}>{game.name}</h3><p className="game-invitation">{game.invitation}</p><p className="game-description">{game.description}</p>
-          <div className="game-actions">
-            {game.ios && <a href={game.ios} aria-label={"Download " + game.name + " on the App Store"}><Image src="/store-badges/app-store.png" alt="Download on the App Store" width={180} height={60} /></a>}
-            {game.android && <a href={game.android} aria-label={"Get " + game.name + " on Google Play"}><Image src="/store-badges/google-play.png" alt="Get it on Google Play" width={180} height={60} /></a>}
-            {!game.ios && <a className="text-link" href={STUDIO_INSTAGRAM}>Follow development <span aria-hidden="true">↗</span></a>}
-          </div>
-        </article>)}</div>
-      </FloorSection>
-      <FloorSection {...floor("gameplay")}>
-        <p className="floor-eyebrow">Inside the games</p><h2 id="gameplay-title">This is how we play.</h2>
-        <div className="gameplay-grid">{GAMES.map((game) => <figure className={"gameplay-capture gameplay-capture--" + game.id} key={game.id}>
-          <a href={"#" + game.id} aria-label={"Explore " + game.name}><Image src={game.capture} alt={game.captureAlt} width={game.id === "shipduel" ? 1400 : 600} height={game.id === "shipduel" ? 650 : 1300} sizes="(max-width: 900px) 90vw, 40vw" /></a>
-          <figcaption><strong>{game.name}</strong><span>{game.caption}</span>{game.id === "shipduel" && <small>Development gameplay · Coming soon</small>}</figcaption>
-        </figure>)}</div>
-      </FloorSection>
-      <FloorSection {...floor("studio")}>
-        <p className="floor-eyebrow">The studio</p><h2 id="studio-title">Made at The Last Click.</h2>
-        <div className="studio-story">
-          <p className="studio-lead">Games with character, humour and choices that matter.</p>
-          <p>We are an independent game studio based in Greece. From the first sketch to the playable world, we bring our ideas to life through BoomBoats, DADLINE and ShipDuel.</p>
-          <div className="studio-worlds">
-            <div><span>01</span><h3>Make your move.</h3><p>A fleet hidden at sea. The square you choose changes what happens next.</p></div>
-            <div><span>02</span><h3>Run the day.</h3><p>Everyday family chaos becomes a city adventure, one errand at a time.</p></div>
-            <div><span>03</span><h3>Take the helm.</h3><p>Rival captains, cannon shots and the choice to keep sailing.</p></div>
-          </div>
-          <a className="text-link" href={STUDIO_INSTAGRAM}>Follow The Last Click <span aria-hidden="true">↗</span></a>
-        </div>
-      </FloorSection>
-      <FloorSection {...floor("contact")}>
-        <h2 id="contact-title">Let&rsquo;s talk games.</h2><p className="contact-body">Questions about our games, press enquiries or a collaboration? Get in touch.</p><ContactForm />
-      </FloorSection>
-    </main>
-    <footer className="site-footer">
-      <nav className="footer-links" aria-label="Footer navigation"><a href="#games">Games</a><a href="#studio">Studio</a><a href="#contact">Contact</a><a href={STUDIO_INSTAGRAM}>Instagram</a></nav>
-      <p>The Last Click © 2026</p><p className="legal">THE LAST CLICK L.P. · Agiou Konstantinou 59-61, Maroussi 15124, Greece</p><p className="legal">GEMI Reg. No. 183032403000 · VAT EL802801218</p>
-    </footer>
-  </>;
+  const floor = (id: string) => FLOORS.find((f) => f.id === id)!;
+
+  return (
+    <>
+      <BootScreen />
+      <a className="skip-link" href="#contact">
+        Skip to contact
+      </a>
+
+      <div className="starfield" aria-hidden="true">
+        {PIXELS.map((pixel) => (
+          <span key={pixel} className={`pixel pixel-${pixel}`} />
+        ))}
+      </div>
+
+      <TowerSceneMount />
+      <Hud />
+
+      <header className="site-header">
+        <a className="brand" href="#hero" aria-label="The Last Click home">
+          <Image src="/TLC-logo.png" alt="The Last Click" width={200} height={148} priority />
+        </a>
+        <a className="contact-link" href="#contact">
+          Contact
+        </a>
+      </header>
+
+      <main className="tower">
+        <FloorSection {...floor("hero")}>
+          <h1 id="hero-title">
+            <span>AI First.</span>
+            <span>Bold Ideas.</span>
+            <span className="accent-line">One Last Click.</span>
+          </h1>
+          <p className="hero-tagline">
+            We turn ambitious ideas into AI-powered products that actually work.
+          </p>
+          <p className="scroll-cue" aria-hidden="true">
+            Scroll to descend
+          </p>
+        </FloorSection>
+
+        <FloorSection {...floor("services")}>
+          <p className="floor-eyebrow">What we build</p>
+          <h2 id="services-title">Three things, done properly.</h2>
+          <ul className="roster">
+            {SERVICES.map((service, index) => (
+              <li key={service.title} className="roster-card">
+                <span className={`sprite sprite-${service.sprite}`} aria-hidden="true" />
+                <span className="roster-index" aria-hidden="true">
+                  {String(index + 1).padStart(2, "0")}
+                </span>
+                <h3>{service.title}</h3>
+                <p>{service.body}</p>
+                <span className="roster-stat">{service.stat}</span>
+              </li>
+            ))}
+          </ul>
+        </FloorSection>
+
+        <FloorSection {...floor("proof")}>
+          <p className="floor-eyebrow">Track record</p>
+          <h2 id="proof-title">Shipped, not shelved.</h2>
+          <ol className="scoreboard">
+            {PROOF.map((row) => (
+              <li key={row.title} className="score-row">
+                <span className="score-rank">{row.rank}</span>
+                <h3 className="score-name">{row.title}</h3>
+                <span className="score-leader" aria-hidden="true" />
+                <span className="score-value">{row.value}</span>
+              </li>
+            ))}
+          </ol>
+        </FloorSection>
+
+        <FloorSection {...floor("process")}>
+          <p className="floor-eyebrow">How we work</p>
+          <h2 id="process-title">Four gates, in order.</h2>
+          <p className="floor-sub">AI-powered at every one of them.</p>
+          <ol className="pipeline">
+            {PROCESS.map((stage, index) => (
+              <li key={stage.step} className="stage" style={{ "--i": index } as React.CSSProperties}>
+                <span className={`sprite sprite-${stage.sprite}`} aria-hidden="true" />
+                <span className="stage-number" aria-hidden="true">
+                  {stage.step}
+                </span>
+                <h3>{stage.title}</h3>
+                <p>{stage.body}</p>
+              </li>
+            ))}
+          </ol>
+        </FloorSection>
+
+        <FloorSection {...floor("contact")}>
+          <h2 id="contact-title">Let&rsquo;s build what should exist next.</h2>
+          <p className="contact-body">
+            Tell us the idea you cannot stop thinking about. We will tell you honestly
+            whether we are the right people to build it.
+          </p>
+          <ContactForm />
+        </FloorSection>
+      </main>
+
+      <footer className="site-footer">
+        <p>The Last Click © 2026</p>
+        <p className="legal">
+          THE LAST CLICK L.P. · Agiou Konstantinou 59-61, Maroussi 15124, Greece
+        </p>
+        <p className="legal">GEMI Reg. No. 183032403000 · VAT EL802801218</p>
+      </footer>
+    </>
+  );
 }
