@@ -1,22 +1,16 @@
 # The Last Click
 
-> The Last Click is an independent game studio based in Greece. We create BoomBoats, DADLINE: Family Rush and ShipDuel.
+> The Last Click is an independent studio based in Greece. We bring ideas to life through thoughtful design and carefully crafted digital experiences.
 
 ## Studio
-Beyond the click. A new chapter of play.
+Beyond the click. A new chapter begins.
 Legal name: THE LAST CLICK L.P. · Maroussi, Greece.
 
-## Games
-- BoomBoats: naval strategy in a voxel ocean. Out now on iOS and Android.
-  - iOS: https://apps.apple.com/us/app/boomboats-naval-battleship/id6794503743
-  - Android: https://play.google.com/store/apps/details?id=dev.jimtsip.boomboats
-- DADLINE: Family Rush: a comic-book running adventure about family errands. Out now on iOS.
-  - iOS: https://apps.apple.com/us/app/dadline-family-rush/id6802018413
-- ShipDuel: pirate cannon duels and winning-streak decisions. Coming soon; no public download destination announced.
+## Approach
+Clear thinking, thoughtful design and care from the earliest sketch to the final click.
 
-## Contact and updates
-- Contact the studio: https://thelastclick.ai/#contact
-- Instagram: https://www.instagram.com/thelastclickgames/
+## Contact
+https://thelastclick.ai/#contact
 
 ## Website
-- https://thelastclick.ai/: games, gameplay, studio and contact.
+https://thelastclick.ai/: studio and contact.
