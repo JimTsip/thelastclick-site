@@ -1,0 +1,184 @@
+:root {
+  --u: calc(100vw / 1440);
+  --navy: #020826;
+  --page: #080b30;
+  --violet: #c9a8ff;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  background: var(--page);
+  color: #fff;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+#page {
+  position: relative;
+  width: 100%;
+  height: calc(var(--page-h, 4800) * var(--u));
+  overflow: hidden;
+}
+
+/* Sections are stacked in design order; each covers the previous one's lower edge. */
+.sec {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  overflow: hidden;
+  contain: layout paint;
+}
+
+.abs {
+  position: absolute;
+  left: calc(var(--x) * var(--u));
+  top: calc(var(--y) * var(--u));
+  width: calc(var(--w) * var(--u));
+  height: calc(var(--h) * var(--u));
+}
+
+.fill { position: absolute; inset: 0; }
+
+img.abs, .abs > img { object-fit: contain; display: block; user-select: none; -webkit-user-drag: none; }
+.abs > img { width: 100%; height: 100%; }
+
+.layer { position: absolute; inset: 0; will-change: transform; pointer-events: none; }
+.piece { will-change: transform; }
+.bob { position: absolute; inset: 0; }
+
+.txt {
+  position: absolute;
+  left: calc(var(--x) * var(--u));
+  top: calc(var(--y) * var(--u));
+  width: calc(var(--w) * var(--u));
+  margin: 0;
+  font-size: calc(var(--fs) * var(--u));
+  line-height: var(--lh, 1.2);
+  letter-spacing: calc(var(--ls, 0) * var(--u));
+  white-space: pre-line;
+  font-synthesis: weight;
+}
+/* The reveal mask reaches past each line box so tight pixel-font line heights (0.65–0.9) never clip glyphs,
+   without changing the layout (clip-path, not padding/overflow). */
+.txt .line { display: block; clip-path: inset(-0.35em -0.1em -0.35em -0.1em); }
+.txt .line > span { display: block; white-space: pre; will-change: transform; }
+
+.f-jersey { font-family: "Jersey 10", monospace; }
+.f-jersey25 { font-family: "Jersey 25", monospace; }
+.f-barlow { font-family: "Barlow Condensed", sans-serif; text-transform: none; }
+.f-inter { font-family: "Inter", sans-serif; }
+
+.copy { position: absolute; inset: 0; will-change: transform; }
+
+/* Angular CTA: an SVG shape plus a label, both in design units. */
+.cta { position: absolute; display: block; cursor: pointer; text-decoration: none; pointer-events: auto; }
+.cta svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; transition: transform .35s cubic-bezier(.2,.9,.3,1.3); }
+.cta .txt { pointer-events: none; transition: transform .35s cubic-bezier(.2,.9,.3,1.3); }
+.cta:hover svg { transform: translate(calc(-4 * var(--u)), calc(-4 * var(--u))); }
+.cta:hover .txt { transform: translate(calc(2 * var(--u)), calc(-4 * var(--u))); }
+.cta .shadow { fill: rgba(2, 8, 38, .35); transform: translate(calc(6 * var(--u)), calc(6 * var(--u))); }
+
+nav a { color: inherit; text-decoration: none; pointer-events: auto; }
+
+/* Elements that break out of their section frame live above the next section. */
+.overlay { position: absolute; left: 0; top: 0; width: 100%; height: 0; pointer-events: none; }
+
+/* ---------- pixel boot loader ---------- */
+#loader {
+  --lu: clamp(0.62px, calc(100vw / 1440), 1.25px);
+  --lav: #a77cff;
+  position: fixed; inset: 0; z-index: 999;
+  display: grid; place-items: center;
+  background: #080b30;
+  will-change: clip-path;
+}
+.ld-glow {
+  position: absolute; left: 50%; top: 50%;
+  width: calc(800 * var(--lu)); height: calc(640 * var(--lu));
+  transform: translate(-50%, -54%);
+  background: radial-gradient(closest-side, #5943cb40, #5943cb00);
+  pointer-events: none;
+}
+.ld-content { position: relative; display: flex; flex-direction: column; align-items: center; gap: calc(18 * var(--lu)); }
+.ld-logo { position: relative; width: calc(220 * var(--lu)); height: calc(163 * var(--lu)); }
+.ld-ghost { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; opacity: .14; }
+.ld-cells { position: absolute; inset: 0; }
+.ld-cells b {
+  position: absolute; width: calc(20 * var(--lu)); height: calc(20 * var(--lu));
+  background: url("./assets/tlc-logo.webp") no-repeat;
+  background-size: calc(220 * var(--lu)) calc(163 * var(--lu));
+  opacity: 0;
+}
+.ld-cells b.on { opacity: 1; animation: ld-pop .32s steps(3, end); }
+@keyframes ld-pop { 0% { opacity: 0; filter: brightness(2.4); } 100% { opacity: 1; filter: none; } }
+.ld-barrow { position: relative; }
+.ld-bar {
+  display: flex; gap: calc(3 * var(--lu));
+  width: calc(420 * var(--lu)); height: calc(18 * var(--lu)); padding: calc(3 * var(--lu));
+  outline: calc(3 * var(--lu)) solid var(--lav); outline-offset: calc(-1.5 * var(--lu));
+  box-shadow: calc(4 * var(--lu)) calc(4 * var(--lu)) 0 #13083f;
+}
+.ld-bar i { flex: 1; height: 100%; }
+.ld-bar i.on { background: var(--lav); animation: ld-seg .24s steps(2, end); }
+@keyframes ld-seg { 0% { background: #fff; } 100% { background: var(--lav); } }
+.ld-pct {
+  position: absolute; left: calc(100% + 16 * var(--lu)); top: 50%; transform: translateY(-52%);
+  font: calc(26 * var(--lu))/1 "Jersey 10", monospace; color: var(--lav); font-variant-numeric: tabular-nums;
+}
+.ld-caption { margin: 0; font: calc(18 * var(--lu))/1 "Jersey 10", monospace; letter-spacing: calc(4 * var(--lu)); color: var(--lav); }
+.ld-blink { animation: ld-blink 1s steps(1) infinite; }
+@keyframes ld-blink { 50% { opacity: 0; } }
+html.is-booting, html.is-booting body { overflow: hidden; }
+#loader-rim { position: fixed; inset: 0; z-index: 998; background: #a77cff; pointer-events: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .layer, .piece, .copy { will-change: auto; }
+}
+
+/* ---------- contact form (tlc.pen · 05 CONTACT, Contact form qdVPq) ---------- */
+.cform { display: flex; flex-direction: column; gap: calc(24 * var(--u)); pointer-events: auto; }
+.cf-row { display: flex; gap: calc(20 * var(--u)); }
+.cf-field { flex: 1; display: flex; flex-direction: column; gap: calc(10 * var(--u)); }
+.cf-field > span { font: 800 calc(15 * var(--u))/1.2 "Barlow Condensed", sans-serif; letter-spacing: calc(2 * var(--u)); color: #c9a8ff; }
+.cf-box { position: relative; display: block; font-style: normal; height: calc(52 * var(--u)); }
+.cf-box--tall { height: calc(130 * var(--u)); }
+.cf-box svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+.cf-box .cf-face { fill: #0d1239; stroke: #5943cb; stroke-width: 2; transition: stroke .15s steps(2); }
+.cf-box .cf-shadow { fill: #13083f; transform: translate(4px, 4px); opacity: 0; transition: opacity .15s steps(2); }
+.cf-field input, .cf-field textarea {
+  position: relative; display: block; width: 100%; height: 100%;
+  padding: 0 calc(16 * var(--u)) 0 calc(27 * var(--u));
+  background: transparent; color: #fff; border: 0; border-radius: 0;
+  font: 400 calc(17 * var(--u))/1.4 Inter, sans-serif; outline: none;
+}
+.cf-field textarea { padding: calc(14 * var(--u)) calc(16 * var(--u)) calc(14 * var(--u)) calc(45 * var(--u)); resize: none; }
+.cf-field input::placeholder, .cf-field textarea::placeholder { color: #8e86c9; }
+.cf-box:focus-within .cf-face { stroke: #a77cff; }
+.cf-box:focus-within .cf-shadow { opacity: 1; }
+.cf-field.bad .cf-face { stroke: #ff6b8b; }
+.cf-honey { position: absolute; left: -10000px; top: 0; width: 1px; height: 1px; overflow: hidden; }
+.cf-turnstile:empty { display: none; }
+.cf-actions { display: flex; align-items: center; gap: calc(24 * var(--u)); }
+.cf-send { position: relative; width: calc(240 * var(--u)); height: calc(60 * var(--u)); padding: 0; border: 0; background: none; cursor: pointer; flex: none; }
+.cf-send svg { position: absolute; inset: 0; width: 100%; height: 100%; fill: #fff; transition: transform .35s cubic-bezier(.2,.9,.3,1.3); }
+.cf-send b { position: relative; font: 800 calc(21 * var(--u))/1 "Barlow Condensed", sans-serif; color: #020826; white-space: pre; }
+.cf-send:hover svg { transform: translate(calc(-4 * var(--u)), calc(-4 * var(--u))); }
+.cform[data-state="busy"] .cf-send { opacity: .7; cursor: progress; }
+.cf-note { margin: 0; font: 400 calc(14 * var(--u))/1.45 Inter, sans-serif; color: #c9a8ff; }
+.cform[data-state="sent"] .cf-note { color: #a3f3ec; }
+.cform[data-state="error"] .cf-note { color: #ff8fa8; }
+
+/* ---------- store buttons (tlc.pen · comp/StoreButton) ---------- */
+.store { display: block; color: var(--ink); text-decoration: none; pointer-events: auto; transition: transform .35s cubic-bezier(.2,.9,.3,1.3); }
+.store .st-shape { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.store .st-shape path { fill: var(--face); stroke: var(--main); stroke-width: 2; }
+.store .st-icon { position: absolute; left: calc(30 * var(--u)); top: calc(19 * var(--u)); width: calc(24 * var(--u)); height: calc(24 * var(--u)); fill: currentColor; }
+.store .st-icon--play { left: calc(32 * var(--u)); top: calc(20 * var(--u)); width: calc(21 * var(--u)); height: calc(22 * var(--u)); }
+.store .st-text { position: absolute; left: calc(65 * var(--u)); top: calc(14 * var(--u)); display: flex; flex-direction: column; gap: calc(3 * var(--u)); }
+.store small { font: 700 calc(10 * var(--u))/1 Inter, sans-serif; letter-spacing: calc(1.2 * var(--u)); }
+.store b { font: 800 calc(24 * var(--u))/0.9 "Barlow Condensed", sans-serif; }
+a.store:hover { transform: translate(calc(-3 * var(--u)), calc(-3 * var(--u))); }
+.store.is-soon { cursor: default; }
+.store.is-soon .st-text, .store.is-soon .st-icon { opacity: .92; }
