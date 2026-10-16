@@ -12,7 +12,7 @@ import { FormEvent, useState } from "react";
  * Styled as the game's console rather than a web form: a prompt, three
  * fields, one command. See .console-* in globals.css.
  */
-const CONTACT_RELAY = "https://formsubmit.co/ajax/hello@thelastclick.gr";
+const CONTACT_RELAY = "https://formsubmit.co/ajax/hello@thelastclick.ai";
 
 type Status = "idle" | "sending" | "sent" | "error";
 

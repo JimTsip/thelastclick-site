@@ -69,7 +69,7 @@ const organizationSchema = {
   image: "https://thelastclick.ai/opengraph-image.png",
   description:
     "AI-first product studio in Athens. We turn briefs into live AI experiences: AI products and agents, mobile apps and games, web apps and design systems.",
-  email: "hello@thelastclick.gr",
+  email: "hello@thelastclick.ai",
   foundingDate: "2026",
   founder: { "@type": "Person", name: "Jim Tsipoutas", url: "https://jimtsipoutas.com" },
   address: {
