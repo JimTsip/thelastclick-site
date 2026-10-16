@@ -182,3 +182,20 @@ html.is-booting, html.is-booting body { overflow: hidden; }
 a.store:hover { transform: translate(calc(-3 * var(--u)), calc(-3 * var(--u))); }
 .store.is-soon { cursor: default; }
 .store.is-soon .st-text, .store.is-soon .st-icon { opacity: .92; }
+
+/* ---------- mobile layout (tlc.pen A2LXWD, 390 design units) ---------- */
+/* Store button · mobile 171×52 (rY9dD): icon 20, kicker Inter 9, store Barlow 20. */
+.is-mobile .store .st-icon { left: calc(24 * var(--u)); top: calc(15 * var(--u)); width: calc(20 * var(--u)); height: calc(20 * var(--u)); }
+.is-mobile .store .st-icon--play { left: calc(26 * var(--u)); top: calc(16 * var(--u)); width: calc(18 * var(--u)); height: calc(19 * var(--u)); }
+.is-mobile .store .st-text { left: calc(52 * var(--u)); top: calc(11.5 * var(--u)); gap: calc(2.5 * var(--u)); }
+.is-mobile .store small { font-size: calc(9 * var(--u)); letter-spacing: calc(0.8 * var(--u)); }
+.is-mobile .store b { font-size: calc(20 * var(--u)); }
+/* One-column form: name, email, idea, then the send button with the note beside it. */
+.is-mobile .cform { gap: calc(18 * var(--u)); }
+.is-mobile .cf-row { flex-direction: column; gap: calc(18 * var(--u)); }
+.is-mobile .cf-actions { gap: calc(18 * var(--u)); }
+.is-mobile .cf-send { width: calc(190 * var(--u)); height: calc(56 * var(--u)); }
+.is-mobile .cf-send b { font-size: calc(20 * var(--u)); }
+.is-mobile .cf-note { font-size: calc(12 * var(--u)); }
+/* Never below 16px on a phone, so iOS does not zoom into a field on focus. */
+.is-mobile .cf-field input, .is-mobile .cf-field textarea { font-size: max(16px, calc(17 * var(--u))); }
