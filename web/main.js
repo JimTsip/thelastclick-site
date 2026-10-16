@@ -139,9 +139,10 @@ const DESKTOP = (() => {
 })();
 
 // ---------- mobile (tlc.pen A2LXWD, 390) ----------
-// Scene on top, a fixed fade into the panel colour, copy stacked underneath; 18 edge columns.
+// Scene on top, a fixed fade into the panel colour, copy stacked underneath; 10 edge columns of 39,
+// the same real size as the desktop's 40px voxels.
 const PHONE = (() => {
-  const CW = 390 / 18;
+  const CW = 390 / 10;
   const scene = (x) => [x, -40, 1050, 700];
   const fade = (c) => ({ box: [0, 360, 390, 680], bg: `linear-gradient(to bottom, ${c}00 0%, ${c}E6 28%, ${c} 41%)` });
   // Copy column (Pencil "Copy" frame): logo, 18, headline, 12, invitation, 24, store buttons.
@@ -152,16 +153,22 @@ const PHONE = (() => {
     stores: { x: 16, y: y + h + 120 + lines * 21 + 24, ...stores },
   });
   return {
-    W: 390, PAGE_H: 5420, COLS: 18, CW, EXT: 220,
+    W: 390, PAGE_H: 5420, COLS: 10, CW, EXT: 220,
     EDGE_TRAVEL: 4 * CW, JIT_AMP: CW, JIT_STEP: CW / 2, COPY_DRIFT: 10, COPY_MARGIN: 4, COPY_T: 8,
-    geometry: "./data/geometry-mobile-v1.json",
+    geometry: "./data/geometry-mobile-v2.json",
     flat: { k: -30, md: 3, zoom: 0.05 },
     // Buttons touch (gap 0): only the diagonal slit separates them.
     store: { w: 171, h: 52, gap: 0, path: "M14 1L170 1L157 51L1 51Z" },
     HERO: {
-      y: 0, h: 820, bg: "#020826", pm: 0.5, part: 110,
-      plate: { src: "18-hero-portal-clean-background.webp", box: [-461, -0.3, 1312, 820.6] },
-      towers: TOWERS && { ...TOWERS, left_box: [-331, -0.3, 1312, 820.6], right_box: [-591, -0.3, 1312, 820.6] },
+      y: 0, h: 860, bg: "#020826", pm: 0.5, part: 110,
+      // Portrait portal (Codex 29–32): the towers frame both sides full height and part on scroll.
+      plate: { src: "29-hero-portal-portrait.webp", box: [-105, -20, 600, 900] },
+      towers: TOWERS && {
+        void: "32-hero-portal-portrait-void.webp",
+        left: "30-hero-tower-left-portrait-alpha.webp",
+        right: "31-hero-tower-right-portrait-alpha.webp",
+        left_box: [-85, -20, 600, 900], right_box: [-173, -20, 600, 900],
+      },
       depth: {
         far: { ky: 0.42, spread: 20, scale: 0.15, md: 4, opacity: 0.6 },
         mid: { ky: 0.24, spread: 52, scale: 0.55, md: 9, opacity: 1 },
@@ -187,7 +194,7 @@ const PHONE = (() => {
     },
     WORLDS: [
       {
-        key: "shipduel", y: 720, h: 1040, bg: "#002C58", z: 20, scene: scene(-210),
+        key: "shipduel", y: 720, h: 1080, bg: "#002C58", z: 20, scene: scene(-210),
         flatSrc: "12-shipduel-complete-scene.webp",
         // Re-staged for portrait: castle on top, Mara behind on the left, Rook in front on the right. No spray.
         layers: [
@@ -200,21 +207,21 @@ const PHONE = (() => {
           { main: "#FFFFFF", ink: "#06324F", backing: "#002C588C", game: "ShipDuel", items: SOON }),
       },
       {
-        key: "tinyderby", y: 1660, h: 1040, bg: "#041B57", z: 30, scene: scene(-182),
+        key: "tinyderby", y: 1660, h: 1080, bg: "#041B57", z: 30, scene: scene(-182),
         flatSrc: "15-tinyderby-complete-scene.webp",
         veil: fade("#041B57"),
         ...stack(500, ["tinyderby-logo.webp", 140, 140], "SMALL PLAYERS.\nBIG RIVALRIES.", "Take your shot.\nMake every move matter.", 2,
           { main: "#FFDB23", ink: "#071F55", backing: "#041B578C", game: "TinyDerby", items: SOON }),
       },
       {
-        key: "boomboats", y: 2600, h: 1040, bg: "#020F3E", z: 40, scene: scene(-262),
+        key: "boomboats", y: 2600, h: 1080, bg: "#020F3E", z: 40, scene: scene(-262),
         flatSrc: "13-boomboats-complete-scene.webp",
         veil: fade("#020F3E"),
         ...stack(466, ["boomboats-logo.webp", 190, 190], "YOUR MOVE\nMAKES WAVES.", "Plot your move. Make it count.", 1,
           { main: "#FFFFFF", ink: "#061A46", backing: "#020F3E8C", game: "BoomBoats", items: BOOMBOATS_STORES }),
       },
       {
-        key: "dadline", y: 3540, h: 1040, bg: "#FFF0C8", z: 50, scene: scene(-578),
+        key: "dadline", y: 3540, h: 1080, bg: "#FFF0C8", z: 50, scene: scene(-578),
         flatSrc: "16-dadline-complete-scene-copyspace-v2.webp",
         veil: fade("#FFF0C8"),
         ...stack(520, ["dadline-logo.webp", 300, 122], "THE CITY HAS\nOTHER PLANS.", "The family has a list.\nStep into the everyday chaos.", 2,
@@ -303,7 +310,7 @@ function piece(parent, b, cls = "") {
   return { outer, intro, bob };
 }
 
-// ---------- mask geometry (geometry-v3.json / geometry-mobile-v1.json from the Pencil masks) ----------
+// ---------- mask geometry (geometry-v3.json / geometry-mobile-v2.json from the Pencil masks) ----------
 function seeded(seed) {
   return () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
 }

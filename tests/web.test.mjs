@@ -12,7 +12,7 @@ test("builds the parallax page with its bundle, styles and domain", async () => 
   assert.match(html, /G-TD0G3Z1MQ7/);
   assert.match(html, /src="\.\/app\.js"/);
   assert.equal((await read("CNAME")).trim(), "thelastclick.ai");
-  for (const f of ["app.js", "app.css", "data/geometry-v3.json", "data/geometry-mobile-v1.json", "robots.txt", "sitemap.xml", "llms.txt", "favicon.ico", "opengraph-image.png"]) {
+  for (const f of ["app.js", "app.css", "data/geometry-v3.json", "data/geometry-mobile-v2.json", "robots.txt", "sitemap.xml", "llms.txt", "favicon.ico", "opengraph-image.png"]) {
     await access(new URL(f, out));
   }
 });
@@ -40,10 +40,11 @@ test("contact form posts to the relay, not to a mail address", async () => {
 test("ships both layouts: desktop 1440 and phone 390", async () => {
   const js = await read("app.js");
   assert.match(js, /geometry-v3\.json/);
-  assert.match(js, /geometry-mobile-v1\.json/);
+  assert.match(js, /geometry-mobile-v2\.json/);
   const css = await read("app.css");
   assert.match(css, /\.is-mobile \.cf-row/);
-  const geo = JSON.parse(await read("data/geometry-mobile-v1.json"));
-  assert.equal(geo.columns, 18);
-  for (const m of geo.masks) assert.equal(m.top.length, 18, `${m.name} has ${m.top.length} columns`);
+  // Phone voxels: 10 columns of 39, the same real size as the desktop's 40px.
+  const geo = JSON.parse(await read("data/geometry-mobile-v2.json"));
+  assert.equal(geo.columns, 10);
+  for (const m of geo.masks) assert.equal(m.top.length, 10, `${m.name} has ${m.top.length} columns`);
 });
