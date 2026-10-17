@@ -834,27 +834,43 @@ function bootLoader() {
     },
     exit(onLift) {
       const content = el.querySelector(".ld-content");
-      const mid = (COLS - 1) / 2;
-      const delays = Array.from({ length: COLS }, (_, i) => 0.42 * (Math.abs(i - mid) / mid) + 0.06 * rnd());
+      // The panel breaks into the page's voxel cells (one mask column wide) that open in random, loosely
+      // clustered order: coarse value noise makes patches, per-cell noise scatters them. Each cell pops
+      // lavender (the bar's colour), full then half size, as it opens onto the hero.
+      const OPEN = 0.93, FLASH = 0.07, G = 4;
+      const cw = innerWidth / COLS, rows = Math.ceil(innerHeight / cw);
+      const gw = Math.ceil(COLS / G) + 2, gh = Math.ceil(rows / G) + 2;
+      const grid = Array.from({ length: gw * gh }, Math.random);
+      const g = (a, b) => grid[b * gw + a];
+      const noise = (c, r) => {
+        const x = c / G, y = r / G, i = Math.floor(x), j = Math.floor(y), fx = x - i, fy = y - j;
+        return (g(i, j) * (1 - fx) + g(i + 1, j) * fx) * (1 - fy) + (g(i, j + 1) * (1 - fx) + g(i + 1, j + 1) * fx) * fy;
+      };
+      const cells = [];
+      for (let r = 0; r < rows; r++) for (let c = 0; c < COLS; c++) cells.push({ k: 0.65 * noise(c, r) + 0.35 * Math.random() });
+      [...cells].sort((a, b) => a.k - b.k).forEach((cell, i, all) => (cell.t = (i / all.length) * OPEN));
       const lift = { p: 0 };
-      const step = CW * u;
-      // A 4px lavender rim (the bar's colour) follows the stepped edge so it reads against the dark hero.
       const rim = document.createElement("div");
       rim.id = "loader-rim";
       document.body.append(rim);
+      const rect = (x0, y0, x1, y1) => `M${x0} ${y0}H${x1}V${y1}H${x0}Z`;
+      const shape = (d) => (d.length ? `path("${d.join("")}")` : "inset(50%)");
       const draw = () => {
-        const vh = innerHeight, w = innerWidth, cw = w / COLS;
-        const pts = [`0px 0px`, `${w}px 0px`], rimPts = [`0px 0px`, `${w}px 0px`];
-        const rimH = Math.max(3, 4 * u);
-        for (let i = COLS - 1; i >= 0; i--) {
-          const q = clamp((lift.p - delays[i]) / 0.52);
-          const y = Math.max(0, Math.round((vh * (1 - q * q)) / step) * step);
-          const yr = y > 0 ? y + rimH : 0;
-          pts.push(`${((i + 1) * cw).toFixed(1)}px ${y.toFixed(1)}px`, `${(i * cw).toFixed(1)}px ${y.toFixed(1)}px`);
-          rimPts.push(`${((i + 1) * cw).toFixed(1)}px ${yr.toFixed(1)}px`, `${(i * cw).toFixed(1)}px ${yr.toFixed(1)}px`);
+        const vh = innerHeight, X = (c) => Math.round(c * cw), Y = (r) => Math.min(vh, Math.round(r * cw));
+        const panel = [], pops = [];
+        for (let r = 0; r < rows; r++) {
+          let run = -1;
+          for (let c = 0; c <= COLS; c++) {
+            const a = c < COLS ? (lift.p - cells[r * COLS + c].t) / FLASH : 9;
+            if (a < 0) { if (run < 0) run = c; continue; }
+            if (run >= 0) { panel.push(rect(X(run), Y(r), X(c), Y(r + 1))); run = -1; }
+            if (c === COLS) break;
+            const x0 = X(c), x1 = X(c + 1), y0 = Y(r), y1 = Y(r + 1), d = a < 0.5 ? 0 : Math.round((x1 - x0) / 4);
+            if (a < 1) pops.push(rect(x0 + d, y0 + d, x1 - d, Math.max(y0 + d, y1 - d)));
+          }
         }
-        el.style.clipPath = `polygon(${pts.join(",")})`;
-        rim.style.clipPath = `polygon(${rimPts.join(",")})`;
+        el.style.clipPath = shape(panel);
+        rim.style.clipPath = shape(pops);
       };
       const tl = gsap.timeline({ onComplete: () => { el.remove(); rim.remove(); document.documentElement.classList.remove("is-booting"); } });
       tl.to(el.querySelector(".ld-logo"), { y: () => -10 * u, duration: 0.14, ease: "power2.out", yoyo: true, repeat: 1 }, 0.2)
