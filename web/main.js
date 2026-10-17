@@ -727,6 +727,15 @@ function contactForm(parent, F) {
 }
 
 // ---------- entrances ----------
+// The hero headline and every game title enter the same way: each line rises out of its clip while its
+// glyphs resolve from scrambled ones.
+function headlineIn(tl, el, at) {
+  el.querySelectorAll(".line > span").forEach((line, i) => {
+    tl.from(line, { yPercent: 105, duration: 1.1 }, at + i * 0.12)
+      .to(line, { scrambleText: { text: line.textContent, chars: "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", speed: 0.5, revealDelay: 0.25 }, duration: 1.1 }, at + i * 0.12);
+  });
+}
+
 function heroIntro(hero) {
   const tl = gsap.timeline({ defaults: { ease: "expo.out" } });
   tl.from(hero.plate.intro, { scale: 1.12, autoAlpha: 0, duration: 1.8 }, 0);
@@ -741,10 +750,7 @@ function heroIntro(hero) {
   byRole("anchor").querySelectorAll(".line > span").forEach((line) => {
     tl.to(line, { scrambleText: { text: line.textContent, chars: "upperCase", speed: 0.6 }, duration: 1.1 }, 0.45);
   });
-  byRole("headline").querySelectorAll(".line > span").forEach((line, i) => {
-    tl.from(line, { yPercent: 105, duration: 1.1 }, 0.55 + i * 0.12)
-      .to(line, { scrambleText: { text: line.textContent, chars: "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", speed: 0.5, revealDelay: 0.25 }, duration: 1.1 }, 0.55 + i * 0.12);
-  });
+  headlineIn(tl, byRole("headline"), 0.55);
   tl.from(byRole("body"), { y: () => 26 * u, autoAlpha: 0, duration: 1 }, 0.95);
   tl.from(byRole("scroll"), { autoAlpha: 0, y: () => 12 * u, duration: 0.8 }, 1.25);
   gsap.to(byRole("scroll"), { y: () => 6 * u, duration: 1.1, ease: "sine.inOut", yoyo: true, repeat: -1, delay: 2.2 });
@@ -756,7 +762,12 @@ function worldReveal(w) {
     scrollTrigger: { trigger: w.sec, start: "top 60%", toggleActions: "play none none reverse" },
   });
   tl.from(w.logo, { scale: 0.55, rotation: -8, autoAlpha: 0, duration: 0.9, ease: "back.out(1.8)" }, 0);
-  tl.from(w.head.querySelectorAll(".line > span"), { yPercent: 110, duration: 0.9, stagger: 0.09 }, 0.12);
+  // The title waits until it is itself on screen (on the phone it sits below the fold when the section
+  // trigger fires), so its scramble is seen on every layout.
+  headlineIn(gsap.timeline({
+    defaults: { ease: "expo.out" },
+    scrollTrigger: { trigger: w.head, start: "top 90%", toggleActions: "play none none reverse" },
+  }), w.head, 0);
   tl.from(w.body.querySelectorAll(".line > span"), { yPercent: 110, autoAlpha: 0, duration: 0.8, stagger: 0.07 }, 0.3);
   tl.from(w.button, { clipPath: "inset(0 100% 0 0)", duration: 0.7, ease: "power3.inOut", stagger: 0.12 }, 0.42);
   tl.from(w.button.map((b) => b.querySelector(".st-text")), { x: () => -14 * u, autoAlpha: 0, duration: 0.6, stagger: 0.12 }, 0.62);
