@@ -35,7 +35,6 @@ const BOOMBOATS_STORES = [
   { store: "apple", href: "https://apps.apple.com/app/id6794503743" },
   { store: "play", href: "https://play.google.com/store/apps/details?id=dev.jimtsip.boomboats" },
 ];
-const DADLINE_STORES = [{ store: "apple", href: "https://apps.apple.com/app/id6802018413" }];
 const SOON = [{ store: "apple" }, { store: "play" }];
 
 // ---------- desktop (tlc.pen lWwes, 1440) ----------
@@ -44,7 +43,7 @@ const DESKTOP = (() => {
   const body = (x, y, w, lh, c, color = "#FFFFFF") => ({ f: "jersey25", x, y, w, fs: 32, fw: 500, lh, color, c });
   const scene = [-180, -80, 1800, 1200];
   return {
-    W: 1440, PAGE_H: 4800, COLS: 36, CW: 40, EXT: 220,
+    W: 1440, PAGE_H: 3120, COLS: 36, CW: 40, EXT: 220,
     // edge build travel, living-edge amplitude and step, copy drift guard and margin (design units)
     EDGE_TRAVEL: 160, JIT_AMP: 40, JIT_STEP: 20, COPY_DRIFT: 15, COPY_MARGIN: 6, COPY_T: 12,
     geometry: "./data/geometry-v3.json",
@@ -97,16 +96,7 @@ const DESKTOP = (() => {
         stores: { x: 75, y: 662, main: "#FFFFFF", ink: "#06324F", backing: "#002C588C", game: "ShipDuel", items: SOON },
       },
       {
-        key: "tinyderby", y: 1680, h: 1040, bg: "#1B9C37", z: 30, scene,
-        flatSrc: "15-tinyderby-complete-scene.webp",
-        veil: { box: [810, 120, 630, 840], bg: "linear-gradient(to left, #041B57F2, #041B5700)" },
-        logo: { src: "tinyderby-logo.webp", box: [880, 215, 232, 232] },
-        head: head(880, 463, 525, 0.784, "SMALL PLAYERS.\nBIG RIVALRIES."),
-        body: body(881, 601, 470, 1.025, "Take your shot.\nMake every move matter."),
-        stores: { x: 880, y: 711, main: "#FFDB23", ink: "#071F55", backing: "#041B578C", game: "TinyDerby", items: SOON },
-      },
-      {
-        key: "boomboats", y: 2520, h: 1040, bg: "#041B57", z: 40, scene,
+        key: "boomboats", y: 1680, h: 1040, bg: "#041B57", z: 40, scene,
         flatSrc: "13-boomboats-complete-scene.webp",
         veil: { box: [820, 70, 620, 890], bg: "linear-gradient(to left, #020F3ED4, #020F3E00)" },
         logo: { src: "boomboats-logo.webp", box: [915, 196, 324, 324] },
@@ -114,18 +104,9 @@ const DESKTOP = (() => {
         body: body(915, 655, 440, 1, "Plot your move. Make it count."),
         stores: { x: 915, y: 734, main: "#FFFFFF", ink: "#061A46", backing: "#020F3E8C", game: "BoomBoats", items: BOOMBOATS_STORES },
       },
-      {
-        key: "dadline", y: 3360, h: 1040, bg: "#FFE7A2", z: 50, scene,
-        flatSrc: "16-dadline-complete-scene-copyspace-v2.webp",
-        veil: { box: [0, -24, 680, 1051], bg: "linear-gradient(to right, #FFF0C8ED 0%, #FFF0C8B3 55%, #FFF0C800 100%)" },
-        logo: { src: "dadline-logo.webp", box: [70, 167, 550, 223] },
-        head: head(82, 420, 550, 0.78, "THE CITY HAS\nOTHER PLANS.", "#09233B"),
-        body: body(82, 570, 500, 1, "The family has a list.\nStep into the everyday chaos.", "#09233B"),
-        stores: { x: 80, y: 670, main: "#09233B", ink: "#FFFFFF", backing: "#FFF0C88C", game: "DadLine", items: DADLINE_STORES },
-      },
     ],
     CONTACT: {
-      key: "footer", y: 4200, h: 600, bg: "#080B30", z: 60,
+      key: "footer", y: 2520, h: 600, bg: "#080B30", z: 60,
       copy: [
         { f: "jersey", x: 80, y: 158, w: 620, fs: 82, fw: 800, lh: 0.88, c: "LET'S MAKE\nTHE NEXT CHAPTER.", role: "headline", tag: "h2" },
         { f: "jersey25", x: 84, y: 312, w: 560, fs: 32, fw: 500, lh: 1, c: "Tell us what you want to build.\nWe reply within two working days.", role: "invite" },
@@ -153,7 +134,7 @@ const PHONE = (() => {
     stores: { x: 16, y: y + h + 120 + lines * 21 + 24, ...stores },
   });
   return {
-    W: 390, PAGE_H: 5420, COLS: 10, CW, EXT: 220,
+    W: 390, PAGE_H: 3540, COLS: 10, CW, EXT: 220,
     EDGE_TRAVEL: 4 * CW, JIT_AMP: CW, JIT_STEP: CW / 2, COPY_DRIFT: 10, COPY_MARGIN: 4, COPY_T: 8,
     geometry: "./data/geometry-mobile-v2.json",
     flat: { k: -30, md: 3, zoom: 0.05 },
@@ -207,29 +188,15 @@ const PHONE = (() => {
           { main: "#FFFFFF", ink: "#06324F", backing: "#002C588C", game: "ShipDuel", items: SOON }),
       },
       {
-        key: "tinyderby", y: 1660, h: 1080, bg: "#041B57", z: 30, scene: scene(-182),
-        flatSrc: "15-tinyderby-complete-scene.webp",
-        veil: fade("#041B57"),
-        ...stack(500, ["tinyderby-logo.webp", 140, 140], "SMALL PLAYERS.\nBIG RIVALRIES.", "Take your shot.\nMake every move matter.", 2,
-          { main: "#FFDB23", ink: "#071F55", backing: "#041B578C", game: "TinyDerby", items: SOON }),
-      },
-      {
-        key: "boomboats", y: 2600, h: 1080, bg: "#020F3E", z: 40, scene: scene(-262),
+        key: "boomboats", y: 1660, h: 1080, bg: "#020F3E", z: 40, scene: scene(-262),
         flatSrc: "13-boomboats-complete-scene.webp",
         veil: fade("#020F3E"),
         ...stack(466, ["boomboats-logo.webp", 190, 190], "YOUR MOVE\nMAKES WAVES.", "Plot your move. Make it count.", 1,
           { main: "#FFFFFF", ink: "#061A46", backing: "#020F3E8C", game: "BoomBoats", items: BOOMBOATS_STORES }),
       },
-      {
-        key: "dadline", y: 3540, h: 1080, bg: "#FFF0C8", z: 50, scene: scene(-578),
-        flatSrc: "16-dadline-complete-scene-copyspace-v2.webp",
-        veil: fade("#FFF0C8"),
-        ...stack(520, ["dadline-logo.webp", 300, 122], "THE CITY HAS\nOTHER PLANS.", "The family has a list.\nStep into the everyday chaos.", 2,
-          { main: "#09233B", ink: "#FFFFFF", backing: "#FFF0C88C", game: "DadLine", items: DADLINE_STORES }, "#09233B"),
-      },
     ],
     CONTACT: {
-      key: "footer", y: 4480, h: 940, bg: "#080B30", z: 60,
+      key: "footer", y: 2600, h: 940, bg: "#080B30", z: 60,
       copy: [
         { f: "jersey", x: 16, y: 100, w: 358, fs: 56, fw: 800, lh: 0.88, c: "LET'S MAKE\nTHE NEXT CHAPTER.", role: "headline", tag: "h2" },
         { f: "jersey25", x: 16, y: 212, w: 358, fs: 20, fw: 500, lh: 1.05, c: "Tell us what you want to build.\nWe reply within two working days.", role: "invite" },
