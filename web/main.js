@@ -43,7 +43,7 @@ const DESKTOP = (() => {
   const body = (x, y, w, lh, c, color = "#FFFFFF") => ({ f: "jersey25", x, y, w, fs: 32, fw: 500, lh, color, c });
   const scene = [-180, -80, 1800, 1200];
   return {
-    W: 1440, PAGE_H: 3120, COLS: 36, CW: 40, EXT: 220,
+    W: 1440, PAGE_H: 3960, COLS: 36, CW: 40, EXT: 220,
     // edge build travel, living-edge amplitude and step, copy drift guard and margin (design units)
     EDGE_TRAVEL: 160, JIT_AMP: 40, JIT_STEP: 20, COPY_DRIFT: 15, COPY_MARGIN: 6, COPY_T: 12,
     geometry: "./data/geometry-v3.json",
@@ -96,7 +96,20 @@ const DESKTOP = (() => {
         stores: { x: 75, y: 662, main: "#FFFFFF", ink: "#06324F", backing: "#002C588C", game: "ShipDuel", items: SOON },
       },
       {
-        key: "boomboats", y: 1680, h: 1040, bg: "#041B57", z: 40, scene,
+        key: "familyrush", y: 1680, h: 1040, bg: "#0875BF", z: 40, scene,
+        flatSrc: "familyrush-plaza.webp",
+        layers: [
+          { name: "plaza", src: "familyrush-plaza.webp", box: [0, 0, 1800, 1200], fit: "cover", k: -45, md: 4 },
+          { name: "family", src: "familyrush-family.webp", box: [210, 175, 700, 736], k: 20, md: 10 },
+        ],
+        veil: { box: [800, 0, 640, 1040], bg: "linear-gradient(to left, #063665F5 0%, #063665D9 65%, #06366500 100%)" },
+        logo: { src: "familyrush-logo.webp", box: [915, 212, 440, 175] },
+        head: head(915, 435, 470, 0.87, "BIG FAMILY.\nBIGGER RUSH."),
+        body: body(915, 614, 440, 1, "Match groceries. Rally the family.\nMake every move count."),
+        stores: { x: 915, y: 734, main: "#FFFFFF", ink: "#063665", backing: "#0636658C", game: "Family Rush", items: SOON },
+      },
+      {
+        key: "boomboats", y: 2520, h: 1040, bg: "#041B57", z: 60, scene,
         flatSrc: "13-boomboats-complete-scene.webp",
         veil: { box: [820, 70, 620, 890], bg: "linear-gradient(to left, #020F3ED4, #020F3E00)" },
         logo: { src: "boomboats-logo.webp", box: [915, 196, 324, 324] },
@@ -106,7 +119,7 @@ const DESKTOP = (() => {
       },
     ],
     CONTACT: {
-      key: "footer", y: 2520, h: 600, bg: "#080B30", z: 60,
+      key: "footer", y: 3360, h: 600, bg: "#080B30", z: 80,
       copy: [
         { f: "jersey", x: 80, y: 158, w: 620, fs: 82, fw: 800, lh: 0.88, c: "LET'S MAKE\nTHE NEXT CHAPTER.", role: "headline", tag: "h2" },
         { f: "jersey25", x: 84, y: 312, w: 560, fs: 32, fw: 500, lh: 1, c: "Tell us what you want to build.\nWe reply within two working days.", role: "invite" },
@@ -134,7 +147,7 @@ const PHONE = (() => {
     stores: { x: 16, y: y + h + 120 + lines * 21 + 24, ...stores },
   });
   return {
-    W: 390, PAGE_H: 3540, COLS: 10, CW, EXT: 220,
+    W: 390, PAGE_H: 4480, COLS: 10, CW, EXT: 220,
     EDGE_TRAVEL: 4 * CW, JIT_AMP: CW, JIT_STEP: CW / 2, COPY_DRIFT: 10, COPY_MARGIN: 4, COPY_T: 8,
     geometry: "./data/geometry-mobile-v2.json",
     flat: { k: -30, md: 3, zoom: 0.05 },
@@ -188,7 +201,18 @@ const PHONE = (() => {
           { main: "#FFFFFF", ink: "#06324F", backing: "#002C588C", game: "ShipDuel", items: SOON }),
       },
       {
-        key: "boomboats", y: 1660, h: 1080, bg: "#020F3E", z: 40, scene: scene(-262),
+        key: "familyrush", y: 1660, h: 1080, bg: "#064E88", z: 40, scene: [0, -40, 390, 700],
+        flatSrc: "familyrush-neighborhood.webp",
+        layers: [
+          { name: "neighborhood", src: "familyrush-neighborhood.webp", box: [-20, 0, 430, 700], fit: "cover", k: -20, md: 2 },
+          { name: "family", src: "familyrush-family.webp", box: [10, 150, 370, 389], k: 12, md: 3 },
+        ],
+        veil: { box: [0, 450, 390, 630], bg: "linear-gradient(to bottom, #064E8800 0%, #064E88EB 19%, #064E88 32%)" },
+        ...stack(550, ["familyrush-logo.webp", 300, 119], "BIG FAMILY.\nBIGGER RUSH.", "Match the groceries. Rally the family.\nMake every move count.", 2,
+          { main: "#FFFFFF", ink: "#063665", backing: "#0636658C", game: "Family Rush", items: SOON }),
+      },
+      {
+        key: "boomboats", y: 2600, h: 1080, bg: "#020F3E", z: 60, scene: scene(-262),
         flatSrc: "13-boomboats-complete-scene.webp",
         veil: fade("#020F3E"),
         ...stack(466, ["boomboats-logo.webp", 190, 190], "YOUR MOVE\nMAKES WAVES.", "Plot your move. Make it count.", 1,
@@ -196,7 +220,7 @@ const PHONE = (() => {
       },
     ],
     CONTACT: {
-      key: "footer", y: 2600, h: 940, bg: "#080B30", z: 60,
+      key: "footer", y: 3540, h: 940, bg: "#080B30", z: 80,
       copy: [
         { f: "jersey", x: 16, y: 100, w: 358, fs: 56, fw: 800, lh: 0.88, c: "LET'S MAKE\nTHE NEXT CHAPTER.", role: "headline", tag: "h2" },
         { f: "jersey25", x: 16, y: 212, w: 358, fs: 20, fw: 500, lh: 1.05, c: "Tell us what you want to build.\nWe reply within two working days.", role: "invite" },
@@ -444,6 +468,7 @@ function buildWorld(W, geo, index) {
         : host;
       const p = piece(holder, L.box);
       const img = image(p.bob, L.src, [0, 0, L.box[2], L.box[3]]);
+      if (L.fit) img.style.objectFit = L.fit;
       // The spray image ends in a straight cut: fade its left end and its lower body so only the crest
       // reaches past the pixel edge into the next world.
       if (L.fade) {
@@ -469,7 +494,8 @@ function buildWorld(W, geo, index) {
   const copy = div("copy", sec);
   const logoWrap = div("piece", copy);
   setBox(logoWrap, W.logo.box);
-  image(logoWrap, W.logo.src, [0, 0, W.logo.box[2], W.logo.box[3]]);
+  const logo = image(logoWrap, W.logo.src, [0, 0, W.logo.box[2], W.logo.box[3]]);
+  logo.alt = W.stores.game;
   const h = text(copy, W.head);
   const b = text(copy, W.body);
   const button = storeButtons(copy, W.stores, W.key);
