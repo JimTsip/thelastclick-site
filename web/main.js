@@ -97,16 +97,18 @@ const DESKTOP = (() => {
       },
       {
         key: "familyrush", y: 1680, h: 1040, bg: "#0875BF", z: 40, scene,
-        flatSrc: "familyrush-plaza.webp",
+        flatSrc: "familyrush-sky.webp",
         layers: [
-          { name: "plaza", src: "familyrush-plaza.webp", box: [0, 0, 1800, 1200], fit: "cover", k: -45, md: 4 },
-          { name: "family", src: "familyrush-family.webp", box: [210, 175, 700, 736], k: 20, md: 10 },
+          { name: "sky", src: "familyrush-sky.webp", box: [0, 0, 1800, 1200], fit: "cover", k: -45, md: 4 },
+          { name: "match", src: "familyrush-match.webp", box: [735, 240, 280, 607], k: -5, md: 5, alt: "Family Rush gameplay: match-3 board and head-to-head race" },
+          { name: "family", src: "familyrush-weekenders.webp", box: [200, 205, 620, 706], k: 20, md: 10, alt: "The Weekenders family from Family Rush" },
         ],
         veil: { box: [800, 0, 640, 1040], bg: "linear-gradient(to left, #063665F5 0%, #063665D9 65%, #06366500 100%)" },
-        logo: { src: "familyrush-logo.webp", box: [915, 212, 440, 175] },
-        head: head(915, 435, 470, 0.87, "BIG FAMILY.\nBIGGER RUSH."),
-        body: body(915, 614, 440, 1, "Match groceries. Rally the family.\nMake every move count."),
+        logo: { src: "familyrush-wordmark.webp", box: [915, 185, 440, 222] },
+        head: head(915, 435, 470, 0.87, "MATCH. RUSH.\nDAD MODE."),
+        body: body(915, 614, 440, 1, "Match three. Charge Dad Mode.\nRace real rivals.\nWhich family rules the road?"),
         stores: { x: 915, y: 734, main: "#FFFFFF", ink: "#063665", backing: "#0636658C", game: "Family Rush", items: SOON },
+        website: { x: 915, y: 806 },
       },
       {
         key: "boomboats", y: 2520, h: 1040, bg: "#041B57", z: 60, scene,
@@ -202,14 +204,16 @@ const PHONE = (() => {
       },
       {
         key: "familyrush", y: 1660, h: 1080, bg: "#064E88", z: 40, scene: [0, -40, 390, 700],
-        flatSrc: "familyrush-neighborhood.webp",
+        flatSrc: "familyrush-sky.webp",
         layers: [
-          { name: "neighborhood", src: "familyrush-neighborhood.webp", box: [-20, 0, 430, 700], fit: "cover", k: -20, md: 2 },
-          { name: "family", src: "familyrush-family.webp", box: [10, 150, 370, 389], k: 12, md: 3 },
+          { name: "sky", src: "familyrush-sky.webp", box: [-20, 0, 430, 700], fit: "cover", k: -20, md: 2 },
+          { name: "match", src: "familyrush-match.webp", box: [236, 170, 140, 303], k: -4, md: 2, alt: "Family Rush match-3 and racing gameplay" },
+          { name: "family", src: "familyrush-weekenders.webp", box: [0, 155, 280, 319], k: 12, md: 3, alt: "The Weekenders family" },
         ],
         veil: { box: [0, 450, 390, 630], bg: "linear-gradient(to bottom, #064E8800 0%, #064E88EB 19%, #064E88 32%)" },
-        ...stack(550, ["familyrush-logo.webp", 300, 119], "BIG FAMILY.\nBIGGER RUSH.", "Match the groceries. Rally the family.\nMake every move count.", 2,
+        ...stack(480, ["familyrush-wordmark.webp", 290, 146], "MATCH. RUSH.\nDAD MODE.", "Match three. Charge Dad Mode.\nRace real rivals.\nWhich family rules the road?", 3,
           { main: "#FFFFFF", ink: "#063665", backing: "#0636658C", game: "Family Rush", items: SOON }),
+        website: { x: 16, y: 904 },
       },
       {
         key: "boomboats", y: 2600, h: 1080, bg: "#020F3E", z: 60, scene: scene(-262),
@@ -336,7 +340,7 @@ function copyRects(key) {
   if (key === "hero") return HERO.copy.map(textRect);
   if (key === "footer") return [...CONTACT.copy.map(textRect), boxRect(CONTACT.logo.box), boxRect(CONTACT.form.box)];
   const W = WORLDS.find((w) => w.key === key);
-  return [boxRect(W.logo.box), textRect(W.head), textRect(W.body), boxRect(storesBox(W.stores))];
+  return [boxRect(W.logo.box), textRect(W.head), textRect(W.body), boxRect(storesBox(W.stores)), ...(W.website ? [[W.website.x, W.website.y, W.website.x + (MOBILE ? 358 : 440), W.website.y + 28]] : [])];
 }
 // advance = how far below the previous section this one starts (design units).
 function edgeLimits(top, own, prev, advance) {
@@ -468,6 +472,8 @@ function buildWorld(W, geo, index) {
         : host;
       const p = piece(holder, L.box);
       const img = image(p.bob, L.src, [0, 0, L.box[2], L.box[3]]);
+      if (L.alt) img.alt = L.alt;
+      if (L.name === "match") img.classList.add("gameplay-shot");
       if (L.fit) img.style.objectFit = L.fit;
       // The spray image ends in a straight cut: fade its left end and its lower body so only the crest
       // reaches past the pixel edge into the next world.
@@ -499,6 +505,15 @@ function buildWorld(W, geo, index) {
   const h = text(copy, W.head);
   const b = text(copy, W.body);
   const button = storeButtons(copy, W.stores, W.key);
+  if (W.website) {
+    const link = document.createElement("a");
+    link.className = "world-website";
+    link.style.cssText = `--x:${W.website.x};--y:${W.website.y}`;
+    link.href = "https://playfamilyrush.com/";
+    link.textContent = "EXPLORE FAMILY RUSH ↗";
+    link.addEventListener("click", () => window.gtag?.("event", "game_website_click", { game: W.key }));
+    copy.append(link);
+  }
   const idx = W.index ? text(copy, W.index) : null;
 
   const prev = index === 0 ? HERO : WORLDS[index - 1];
